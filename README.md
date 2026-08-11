@@ -4,7 +4,7 @@ CodeForge is a full-stack online coding platform inspired by **LeetCode**, built
 
 It also provides an **admin dashboard** for managing problems, users, test cases, and platform notices.
 
-> 🚀 A real-world full-stack project exploring authentication, REST APIs, database management, role-based access control, and code execution using a self-hosted Judge0-based evaluation system.
+> 🚀 A real-world full-stack project exploring authentication, REST APIs, database management, role-based access control, AI integration, and code execution using a self-hosted Judge0-based evaluation system.
 
 ---
 
@@ -21,6 +21,14 @@ It also provides an **admin dashboard** for managing problems, users, test cases
 - 📊 View submission results and history
 - 🧠 Practice and improve problem-solving skills
 - 📢 View platform announcements and notices
+
+### 🤖 AI-Powered DSA Assistant
+
+- 🧠 Integrated **Google Gemini AI** for context-aware DSA assistance
+- 💡 Get hints, approach suggestions, code reviews, and debugging help
+- 🚀 Provides optimized solutions with **time and space complexity**
+- 🧪 Helps generate test cases and edge cases
+- 🎯 Uses the current problem's description, examples, and starter code for contextual responses
 
 ### 🧩 Problem System
 
@@ -62,16 +70,16 @@ It also provides an **admin dashboard** for managing problems, users, test cases
 ```text
 CodeForge/
 │
-├── client/                  # React frontend
+├── client/                      # React frontend
 │   ├── public/
 │   └── src/
-│       ├── components/      # Reusable UI components
-│       ├── pages/           # Application pages
-│       ├── hooks/           # Custom React hooks
-│       ├── services/        # API communication
+│       ├── components/          # Reusable UI components
+│       ├── pages/               # Application pages
+│       ├── hooks/               # Custom React hooks
+│       ├── services/            # API communication
 │       └── ...
 │
-├── server/                  # Node.js + Express backend
+├── server/                      # Node.js + Express backend
 │   ├── controllers/
 │   ├── models/
 │   ├── routes/
@@ -79,7 +87,7 @@ CodeForge/
 │   ├── services/
 │   └── ...
 │
-├── judge0/                  # Self-hosted Judge0 configuration
+├── judge0/                      # Self-hosted Judge0 configuration
 │
 ├── .gitignore
 └── README.md
@@ -96,6 +104,7 @@ CodeForge/
 | Backend | Node.js, Express.js |
 | Database | MongoDB, Mongoose |
 | Authentication | JWT, Bcrypt |
+| AI Integration | Google Gemini API |
 | Code Execution | Judge0, Docker |
 | API Communication | REST API, Axios |
 | Development | VS Code, Git, GitHub, Postman |
@@ -103,6 +112,8 @@ CodeForge/
 ---
 
 ## 🔄 How It Works
+
+### 💻 Code Submission Flow
 
 ```text
 User
@@ -131,20 +142,40 @@ Test Results / Verdict
 Submission History
 ```
 
+### 🤖 AI Assistance Flow
+
+```text
+Problem Context
+      │
+      ▼
+Node.js + Express API
+      │
+      ▼
+Google Gemini AI
+      │
+      ▼
+Context-Aware DSA Assistance
+```
+
 ---
 
 ## 🔐 Authentication & Authorization
 
 CodeForge uses **JWT-based authentication** with role-based access control.
 
-**Users** can:
+### 👤 Users
+
+Users can:
 
 - Solve problems
 - Submit code
 - View results
 - Track submission history
+- Get AI-powered DSA assistance
 
-**Admins** can:
+### 🛡️ Admins
+
+Admins can:
 
 - Manage problems
 - Manage test cases
@@ -161,8 +192,8 @@ Protected routes ensure that admin functionality is accessible only to authorize
 ### 1. Clone the Repository
 
 ```bash
-git clone <https://github.com/Tiwari-priya16/CodeForge-Online-Coding-Platform.git>
-cd CodeForge
+git clone https://github.com/Tiwari-priya16/CodeForge-Online-Coding-Platform.git
+cd CodeForge-Online-Coding-Platform
 ```
 
 ### 2. Install Frontend Dependencies
@@ -187,9 +218,10 @@ Create a `.env` file inside the `server` directory.
 PORT=5000
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
+GEMINI_KEY=your_gemini_api_key
 ```
 
-> Never commit `.env` files or other sensitive credentials to GitHub.
+> ⚠️ Never commit `.env` files or other sensitive credentials to GitHub.
 
 ### 5. Start the Backend
 
@@ -222,7 +254,7 @@ docker-compose up -d
 
 🚧 **Active Development**
 
-CodeForge is continuously being improved with new features, UI enhancements, backend functionality, and improvements to the code evaluation system.
+CodeForge is continuously being improved with new features, UI enhancements, backend functionality, AI capabilities, and improvements to the code evaluation system.
 
 ---
 
@@ -245,13 +277,13 @@ CodeForge is continuously being improved with new features, UI enhancements, bac
 **Priya Tiwari**  
 B.Tech CSE — NIT Patna
 
-GitHub: **Tiwari-priya16**
+GitHub: **[Tiwari-priya16](https://github.com/Tiwari-priya16)**
 
 ---
 
 ## ⭐ About the Project
 
-CodeForge is being developed as a portfolio project to gain practical experience in **full-stack development, backend architecture, authentication, database design, role-based authorization, and secure code execution systems**.
+CodeForge is being developed as a portfolio project to gain practical experience in **full-stack development, backend architecture, authentication, database design, role-based authorization, AI integration, and secure code execution systems**.
 
 The project aims to evolve into a production-style online coding platform rather than remaining a simple CRUD application.
 
