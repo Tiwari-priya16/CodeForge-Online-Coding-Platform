@@ -1,293 +1,262 @@
-⚡ CodeForge — Online Coding Platform
+# ⚡ CodeForge — Online Coding Platform
 
-CodeForge is a full-stack coding platform inspired by LeetCode, built to practice programming problems, submit solutions, and track progress.
+CodeForge is a full-stack online coding platform inspired by **LeetCode**, built for practicing programming problems, submitting solutions, and tracking coding progress.
 
-It also includes an admin dashboard to manage problems, users, and platform content.
+It also provides an **admin dashboard** for managing problems, users, test cases, and platform notices.
 
-«🚀 Built to explore real-world full-stack development, authentication, APIs, databases, system design, and code evaluation infrastructure using a self-hosted execution engine.»
+> 🚀 A real-world full-stack project exploring authentication, REST APIs, database management, role-based access control, and code execution using a self-hosted Judge0-based evaluation system.
 
 ---
 
-✨ Features
+## ✨ Features
 
-👨‍💻 User Features
+### 👨‍💻 User Features
 
-- 🔐 Authentication (Register/Login)
+- 🔐 User registration and login
 - 👤 Profile management
 - 📚 Browse coding problems
-- 🔎 Filter by difficulty/category
-- 💻 Built-in Monaco-based code editor
-- ▶️ Submit solutions in multiple languages
-- 📊 View results & submission history
-- 🧠 Practice & improve skills
-- 📢 View announcements/notices
+- 🔎 Filter problems by difficulty/category
+- 💻 Monaco-based online code editor
+- ▶️ Submit solutions in multiple programming languages
+- 📊 View submission results and history
+- 🧠 Practice and improve problem-solving skills
+- 📢 View platform announcements and notices
 
----
-
-🧩 Problem System
+### 🧩 Problem System
 
 - LeetCode-style coding problems
-- Clear problem statements with constraints & examples
-- Difficulty levels:
-  - 🟢 Easy
-  - 🟡 Medium
-  - 🔴 Hard
-- Multi-language support (C++, Java, Python, JavaScript, etc.)
-- Test-case based evaluation system
-- Hidden + visible test cases
-- Submission tracking & history
+- Detailed problem statements, constraints, and examples
+- 🟢 Easy | 🟡 Medium | 🔴 Hard difficulty levels
+- Multi-language code submissions
+- Visible and hidden test cases
+- Test-case based evaluation
+- Submission tracking and verdict generation
 
----
+### ⚙️ Code Execution & Evaluation
 
-⚙️ Code Execution & Evaluation System (Core Engine)
+- 🧠 Self-hosted **Judge0-based** code execution
+- 🐳 Docker-based isolated execution environment
+- ⏱️ Time and memory limit enforcement
+- 🔒 Sandboxed execution for submitted code
+- 📥 Input/output handling for test cases
+- 📊 Automatic verdicts such as:
+  - Accepted
+  - Wrong Answer
+  - Time Limit Exceeded
+  - Runtime Error
+- 🔁 Queue-based submission processing
 
-- 🧠 Judge0-based code execution system
-- 🚀 Self-hosted Judge0 instance for scalable evaluation
-- 🐳 Docker-based sandboxed execution environment
-- ⏱️ Time limit & memory limit enforcement
-- 🔒 Secure isolated runtime for each submission
-- 📥 Input/output stream handling for test cases
-- 📊 Automatic verdict generation:
-  - Accepted ✅
-  - Wrong Answer ❌
-  - Time Limit Exceeded ⏳
-  - Runtime Error 💥
-- 🔁 Queue-based submission processing system
-- 📡 API integration between backend and Judge0 service
+### 🛠️ Admin Dashboard
 
----
-
-🛠️ Admin Dashboard
-
-Admins can:
-
-- 📋 Manage problems (CRUD)
-- 📢 Post/manage notices
+- 📋 Create, update, and delete coding problems
+- 🧪 Manage problem test cases
+- 📢 Create and manage platform notices
 - 👥 Manage users
-- 📊 Monitor submissions & system activity
-- 🔐 Secure admin-only access
-- 🧪 Add test cases for problems
-- ⚙️ Configure problem constraints & metadata
+- 📊 Monitor submissions and platform activity
+- 🔐 Protected admin-only functionality
 
 ---
 
-🔐 Authentication & Roles
+## 🏗️ Project Structure
 
-👤 User
+```text
+CodeForge/
+│
+├── client/                  # React frontend
+│   ├── public/
+│   └── src/
+│       ├── components/      # Reusable UI components
+│       ├── pages/           # Application pages
+│       ├── hooks/           # Custom React hooks
+│       ├── services/        # API communication
+│       └── ...
+│
+├── server/                  # Node.js + Express backend
+│   ├── controllers/
+│   ├── models/
+│   ├── routes/
+│   ├── middleware/
+│   ├── services/
+│   └── ...
+│
+├── judge0/                  # Self-hosted Judge0 configuration
+│
+├── .gitignore
+└── README.md
+```
+
+---
+
+## 🧰 Tech Stack
+
+| Layer | Technologies |
+|---|---|
+| Frontend | React.js, JavaScript/TypeScript, Tailwind CSS |
+| Code Editor | Monaco Editor |
+| Backend | Node.js, Express.js |
+| Database | MongoDB, Mongoose |
+| Authentication | JWT, Bcrypt |
+| Code Execution | Judge0, Docker |
+| API Communication | REST API, Axios |
+| Development | VS Code, Git, GitHub, Postman |
+
+---
+
+## 🔄 How It Works
+
+```text
+User
+  │
+  ▼
+React Frontend
+  │
+  ▼
+Node.js + Express API
+  │
+  ├──────────────► MongoDB
+  │
+  ▼
+Submission Service
+  │
+  ▼
+Self-hosted Judge0
+  │
+  ▼
+Sandboxed Code Execution
+  │
+  ▼
+Test Results / Verdict
+  │
+  ▼
+Submission History
+```
+
+---
+
+## 🔐 Authentication & Authorization
+
+CodeForge uses **JWT-based authentication** with role-based access control.
+
+**Users** can:
 
 - Solve problems
 - Submit code
-- View history
-- Track performance
+- View results
+- Track submission history
 
-🛡️ Admin
+**Admins** can:
 
-- Manage platform content
-- Add/update/delete problems
+- Manage problems
 - Manage test cases
-- Access admin dashboard
+- Manage users
+- Post notices
+- Monitor platform activity
 
-«Protected routes ensure strict role-based access control.»
-
----
-
-🏗️ Architecture
-
-Client (React Frontend)
-        ↓
-Backend API (Node.js + Express)
-        ↓
-Auth Service + Problem Service + Submission Service
-        ↓
-Code Execution Layer (Self-hosted Judge0)
-        ↓
-Database (MongoDB)
+Protected routes ensure that admin functionality is accessible only to authorized administrators.
 
 ---
 
-🧰 Tech Stack (Detailed)
+## 🚀 Installation & Setup
 
-🎨 Frontend
+### 1. Clone the Repository
 
-- React.js (Component-based UI)
-- Tailwind CSS (Utility-first styling)
-- JavaScript (ES6+)
-- Axios (API communication)
-- React Router (Routing)
-- Monaco Editor (Code editor like VS Code)
-
----
-
-⚙️ Backend
-
-- Node.js (Runtime environment)
-- Express.js (Server framework)
-- RESTful API architecture
-- JWT (Authentication system)
-- Bcrypt (Password hashing)
-- Middleware-based request handling
-
----
-
-🧠 Code Execution System
-
-- Judge0 API (Self-hosted instance)
-- Docker (Containerized execution environment)
-- Redis (Queue management for submissions)
-- Worker-based architecture for processing submissions
-- Sandboxed runtime isolation for security
-- Multi-language compiler support via Judge0
-
----
-
-🗄️ Database
-
-- MongoDB (NoSQL database)
-- Mongoose (ODM for schema modeling)
-- Collections:
-  - Users
-  - Problems
-  - Submissions
-  - Test Cases
-  - Admin Logs
-
----
-
-🧪 Dev Tools & Infrastructure
-
-- Git & GitHub (Version control)
-- Postman (API testing)
-- VS Code (Development environment)
-- Nodemon (Backend development)
-- dotenv (Environment configuration)
-
----
-
-📁 Project Structure
-
-CodeForge/
-├── client/        # React Frontend
-├── server/        # Node.js Backend
-├── judge0/        # Self-hosted Judge0 setup
-└── README.md
-
----
-
-🔄 Workflow
-
-🔐 Authentication
-
-Login/Register → JWT Verification → Role-based Access
-
-💻 Problem Solving
-
-Select Problem → Write Code → Submit → Send to Judge0 → Execute in Sandbox → Return Result → Store Submission
-
-🛠️ Admin Flow
-
-Login → Dashboard → Manage Problems/Test Cases → Update Platform Content
-
----
-
-🎯 Goals
-
-- Real-world full-stack system design experience
-- Scalable code execution architecture
-- Secure authentication & authorization
-- Distributed submission evaluation system
-- Production-like backend engineering exposure
-
----
-
-🚀 Future Enhancements
-
-- 🏆 Global leaderboards
-- 🔥 Daily streak system
-- 📊 Advanced analytics dashboard
-- 🏅 Badges & achievements
-- 💬 Discussion forum per problem
-- ⭐ Bookmark & favorite problems
-- ⏱️ Live coding contests
-- 🌐 Expanded language support
-- 📡 WebSocket-based real-time judge updates
-
----
-
-🧪 Run Locally
-
-Clone Repository
-
+```bash
 git clone <https://github.com/Tiwari-priya16/CodeForge-Online-Coding-Platform.git>
 cd CodeForge
+```
 
----
+### 2. Install Frontend Dependencies
 
-Install Dependencies
-
-Frontend:
-
+```bash
 cd client
 npm install
+```
 
-Backend:
+### 3. Install Backend Dependencies
 
+```bash
 cd ../server
 npm install
+```
 
----
+### 4. Configure Environment Variables
 
-Run Services
+Create a `.env` file inside the `server` directory.
 
-Backend:
+```env
+PORT=5000
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+```
 
+> Never commit `.env` files or other sensitive credentials to GitHub.
+
+### 5. Start the Backend
+
+```bash
+cd server
 npm run dev
+```
 
-Frontend:
+### 6. Start the Frontend
 
+Open another terminal:
+
+```bash
 cd client
 npm run dev
+```
 
----
+### 7. Start Judge0
 
-Judge0 (Self-hosted)
+If using the self-hosted Judge0 setup:
 
+```bash
 cd judge0
 docker-compose up -d
+```
 
 ---
 
-🔐 Security
+## 📌 Project Status
 
-- JWT-based authentication
-- Role-based access control
-- Sandboxed code execution (Docker isolation)
-- Environment variable protection
-- Rate limiting on APIs
-- Secure submission handling pipeline
+🚧 **Active Development**
+
+CodeForge is continuously being improved with new features, UI enhancements, backend functionality, and improvements to the code evaluation system.
 
 ---
 
-📌 Status
+## 🚀 Future Enhancements
 
-🚧 Active Development
+- 🏆 Global leaderboard
+- 🔥 Daily coding streaks
+- 📊 Advanced user analytics
+- 🏅 Badges and achievements
+- 💬 Problem discussion system
+- ⭐ Bookmark/favorite problems
+- ⏱️ Coding contests
+- 🌐 Expanded language support
+- 📡 Real-time judge updates using WebSockets
 
 ---
 
-👩‍💻 Developer
+## 👩‍💻 Developer
 
-Priya Tiwari
+**Priya Tiwari**  
 B.Tech CSE — NIT Patna
 
-GitHub: Tiwari-priya16
+GitHub: **Tiwari-priya16**
 
 ---
 
-⭐ Summary
+## ⭐ About the Project
 
-CodeForge is a full-stack coding platform designed to simulate real-world system design with problem solving, authentication, admin control, and a self-hosted Judge0-based code execution engine.
+CodeForge is being developed as a portfolio project to gain practical experience in **full-stack development, backend architecture, authentication, database design, role-based authorization, and secure code execution systems**.
+
+The project aims to evolve into a production-style online coding platform rather than remaining a simple CRUD application.
 
 ---
 
-📜 License
+## 📜 License
 
-Educational & portfolio project
+This project is developed for educational and portfolio purposes.
