@@ -1,10 +1,10 @@
-⚡** CodeForge — Online Coding Platform **
+⚡ CodeForge — Online Coding Platform
 
-CodeForge is a full-stack online coding platform inspired by platforms like LeetCode, designed to provide users with an interactive environment to practice programming problems, submit solutions, and track their coding activity.
+CodeForge is a full-stack coding platform inspired by LeetCode, built to practice programming problems, submit solutions, and track progress.
 
-The platform also includes an administrative dashboard for managing coding problems, platform content, notices, and other activities.
+It also includes an admin dashboard to manage problems, users, and platform content.
 
-«🚀 Built as a full-stack development project to explore real-world web application architecture, authentication, role-based access, backend APIs, database management, and online code evaluation.»
+«🚀 Built to explore real-world full-stack development, authentication, APIs, databases, system design, and code evaluation infrastructure using a self-hosted execution engine.»
 
 ---
 
@@ -12,366 +12,281 @@ The platform also includes an administrative dashboard for managing coding probl
 
 👨‍💻 User Features
 
-- 🔐 User registration and authentication
-- 👤 User profile and account management
-- 📚 Browse and practice coding problems
-- 🔎 Explore problems based on difficulty/category
-- 💻 Online code editor for writing solutions
-- ▶️ Submit solutions for evaluation
-- 📊 View submission results and status
-- 🧠 Practice programming and improve problem-solving skills
-- 📢 View important platform announcements/notices
+- 🔐 Authentication (Register/Login)
+- 👤 Profile management
+- 📚 Browse coding problems
+- 🔎 Filter by difficulty/category
+- 💻 Built-in Monaco-based code editor
+- ▶️ Submit solutions in multiple languages
+- 📊 View results & submission history
+- 🧠 Practice & improve skills
+- 📢 View announcements/notices
 
 ---
 
-🧩 Coding Problem System
+🧩 Problem System
 
-- Problem-based coding practice similar to LeetCode
-- Problem statements with detailed descriptions
-- Difficulty classification
+- LeetCode-style coding problems
+- Clear problem statements with constraints & examples
+- Difficulty levels:
   - 🟢 Easy
   - 🟡 Medium
   - 🔴 Hard
-- Support for programming-language based submissions
-- Test-case based solution evaluation
-- Submission status tracking
-- Code submission history
+- Multi-language support (C++, Java, Python, JavaScript, etc.)
+- Test-case based evaluation system
+- Hidden + visible test cases
+- Submission tracking & history
+
+---
+
+⚙️ Code Execution & Evaluation System (Core Engine)
+
+- 🧠 Judge0-based code execution system
+- 🚀 Self-hosted Judge0 instance for scalable evaluation
+- 🐳 Docker-based sandboxed execution environment
+- ⏱️ Time limit & memory limit enforcement
+- 🔒 Secure isolated runtime for each submission
+- 📥 Input/output stream handling for test cases
+- 📊 Automatic verdict generation:
+  - Accepted ✅
+  - Wrong Answer ❌
+  - Time Limit Exceeded ⏳
+  - Runtime Error 💥
+- 🔁 Queue-based submission processing system
+- 📡 API integration between backend and Judge0 service
 
 ---
 
 🛠️ Admin Dashboard
 
-The platform provides administrative functionality for managing the coding platform.
-
 Admins can:
 
-- 📋 Manage coding problems
-- ➕ Add new coding problems
-- ✏️ Update existing problems
-- 🗑️ Remove problems
-- 📢 Create and manage platform notices
-- 📊 Manage platform content
-- 👥 Manage users and platform activities
-- 🔐 Access admin-only functionality through role-based authorization
+- 📋 Manage problems (CRUD)
+- 📢 Post/manage notices
+- 👥 Manage users
+- 📊 Monitor submissions & system activity
+- 🔐 Secure admin-only access
+- 🧪 Add test cases for problems
+- ⚙️ Configure problem constraints & metadata
 
 ---
 
-🔐 Authentication & Authorization
+🔐 Authentication & Roles
 
-CodeForge follows a role-based access approach.
+👤 User
 
-User
+- Solve problems
+- Submit code
+- View history
+- Track performance
 
-Regular users can:
+🛡️ Admin
 
-- Access coding problems
-- Write and submit solutions
-- View their submissions
-- Access user-specific features
+- Manage platform content
+- Add/update/delete problems
+- Manage test cases
+- Access admin dashboard
 
-Admin
-
-Administrators have additional privileges such as:
-
-- Managing coding problems
-- Managing notices
-- Managing platform content
-- Accessing the administrative dashboard
-
-Unauthorized users cannot access protected administrative functionality.
+«Protected routes ensure strict role-based access control.»
 
 ---
 
-🏗️ Project Architecture
+🏗️ Architecture
 
-The project follows a full-stack client-server architecture.
-
-                    ┌─────────────────────┐
-                    │       Client        │
-                    │   Frontend / UI     │
-                    └──────────┬──────────┘
-                               │
-                               │ HTTP / REST API
-                               ▼
-                    ┌─────────────────────┐
-                    │       Backend       │
-                    │  Server / REST API  │
-                    └──────────┬──────────┘
-                               │
-              ┌────────────────┼────────────────┐
-              │                │                │
-              ▼                ▼                ▼
-        Authentication    Problem System    User System
-              │                │                │
-              └────────────────┼────────────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │      Database       │
-                    └─────────────────────┘
+Client (React Frontend)
+        ↓
+Backend API (Node.js + Express)
+        ↓
+Auth Service + Problem Service + Submission Service
+        ↓
+Code Execution Layer (Self-hosted Judge0)
+        ↓
+Database (MongoDB)
 
 ---
 
-🧰 Tech Stack
+🧰 Tech Stack (Detailed)
 
-Frontend
+🎨 Frontend
 
-- React.js
-- JavaScript / TypeScript
-- HTML5
-- CSS3
-- Tailwind CSS
+- React.js (Component-based UI)
+- Tailwind CSS (Utility-first styling)
+- JavaScript (ES6+)
+- Axios (API communication)
+- React Router (Routing)
+- Monaco Editor (Code editor like VS Code)
 
-Backend
+---
 
-- Node.js
-- Express.js
-- REST APIs
-- APIs (RESTful APIs)
+⚙️ Backend
 
-Database
+- Node.js (Runtime environment)
+- Express.js (Server framework)
+- RESTful API architecture
+- JWT (Authentication system)
+- Bcrypt (Password hashing)
+- Middleware-based request handling
 
-- MongoDB
+---
 
-Development Tools
+🧠 Code Execution System
 
-- Visual Studio Code
-- Git
-- GitHub
-- Postman
+- Judge0 API (Self-hosted instance)
+- Docker (Containerized execution environment)
+- Redis (Queue management for submissions)
+- Worker-based architecture for processing submissions
+- Sandboxed runtime isolation for security
+- Multi-language compiler support via Judge0
+
+---
+
+🗄️ Database
+
+- MongoDB (NoSQL database)
+- Mongoose (ODM for schema modeling)
+- Collections:
+  - Users
+  - Problems
+  - Submissions
+  - Test Cases
+  - Admin Logs
+
+---
+
+🧪 Dev Tools & Infrastructure
+
+- Git & GitHub (Version control)
+- Postman (API testing)
+- VS Code (Development environment)
+- Nodemon (Backend development)
+- dotenv (Environment configuration)
 
 ---
 
 📁 Project Structure
 
 CodeForge/
-│
-├── client/                 # Frontend application
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   └── ...
-│   │
-│   └── ...
-│
-├── server/                 # Backend application
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   ├── middleware/
-│   ├── services/
-│   └── ...
-│
-├── README.md
-└── ...
-
-«The exact folder structure may evolve as the project grows.»
+├── client/        # React Frontend
+├── server/        # Node.js Backend
+├── judge0/        # Self-hosted Judge0 setup
+└── README.md
 
 ---
 
-🔄 How It Works
+🔄 Workflow
 
-1. Authentication
+🔐 Authentication
 
-A user registers/logs into the platform.
+Login/Register → JWT Verification → Role-based Access
 
-User
- ↓
-Login / Register
- ↓
-Authentication
- ↓
-Authorized Platform Access
+💻 Problem Solving
 
-2. Solving a Problem
+Select Problem → Write Code → Submit → Send to Judge0 → Execute in Sandbox → Return Result → Store Submission
 
-Select Problem
-      ↓
-Read Problem Statement
-      ↓
-Write Code
-      ↓
-Submit Solution
-      ↓
-Code Evaluation
-      ↓
-Submission Result
+🛠️ Admin Flow
 
-3. Administrative Workflow
-
-Admin Login
-     ↓
-Admin Dashboard
-     ↓
-Manage Problems / Notices
-     ↓
-Create / Update / Delete Content
-     ↓
-Changes Reflected on Platform
+Login → Dashboard → Manage Problems/Test Cases → Update Platform Content
 
 ---
 
-🎯 Project Goals
+🎯 Goals
 
-The main objective of CodeForge is to build a practical online coding platform while gaining experience with:
-
-- Full-stack web development
-- REST API development
-- Authentication and authorization
-- Role-based access control
-- Database design and management
-- Frontend-backend integration
-- CRUD operations
-- Secure API design
-- Git and GitHub workflows
-- Real-world project architecture
+- Real-world full-stack system design experience
+- Scalable code execution architecture
+- Secure authentication & authorization
+- Distributed submission evaluation system
+- Production-like backend engineering exposure
 
 ---
 
 🚀 Future Enhancements
 
-The platform can be further extended with:
-
-- 🏆 Leaderboards and rankings
-- 🔥 Daily coding streaks
-- 📈 Detailed user progress analytics
-- 🏅 Badges and achievements
-- 💬 Problem discussions
-- ⭐ Problem bookmarking
-- 🏷️ Advanced problem tagging and filtering
-- ⏱️ Coding contests
-- 🧑‍🤝‍🧑 Contest rankings
-- 🌐 Support for additional programming languages
-- ⚙️ Improved online code execution infrastructure
-- 📊 Advanced admin analytics
+- 🏆 Global leaderboards
+- 🔥 Daily streak system
+- 📊 Advanced analytics dashboard
+- 🏅 Badges & achievements
+- 💬 Discussion forum per problem
+- ⭐ Bookmark & favorite problems
+- ⏱️ Live coding contests
+- 🌐 Expanded language support
+- 📡 WebSocket-based real-time judge updates
 
 ---
 
-📸 Screenshots
+🧪 Run Locally
 
-Screenshots of the platform will be added here as the UI and major modules are finalized.
-
-Coming Soon 🚧
-
----
-
-🧪 Running the Project Locally
-
-Prerequisites
-
-Make sure you have installed:
-
-- Node.js
-- npm
-- MongoDB
-- Git
-
-Clone the Repository
+Clone Repository
 
 git clone <https://github.com/Tiwari-priya16/CodeForge-Online-Coding-Platform.git>
 cd CodeForge
 
+---
+
 Install Dependencies
 
-For the frontend:
+Frontend:
 
 cd client
 npm install
 
-For the backend:
+Backend:
 
 cd ../server
 npm install
 
-Environment Variables
+---
 
-Create a ".env" file in the backend directory.
+Run Services
 
-Example:
-
-PORT=5000
-MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-
-«Never commit your ".env" file or other sensitive credentials to GitHub.»
-
-Start the Backend
+Backend:
 
 npm run dev
 
-Start the Frontend
-
-Open another terminal:
+Frontend:
 
 cd client
 npm run dev
 
-The application can then be accessed through the local development URL shown by the frontend development server.
+---
+
+Judge0 (Self-hosted)
+
+cd judge0
+docker-compose up -d
 
 ---
 
-🔒 Security
+🔐 Security
 
-The project follows basic security practices such as:
-
-- Protected API routes
-- Role-based authorization
-- Authentication for restricted resources
-- Environment variables for sensitive configuration
-- ".gitignore" for preventing sensitive files from being committed
+- JWT-based authentication
+- Role-based access control
+- Sandboxed code execution (Docker isolation)
+- Environment variable protection
+- Rate limiting on APIs
+- Secure submission handling pipeline
 
 ---
 
-📌 Project Status
+📌 Status
 
 🚧 Active Development
-
-CodeForge is continuously being developed and improved. New features, UI improvements, backend functionality, and security enhancements are being added as the project progresses.
-
----
-
-🤝 Contribution
-
-This project is currently being developed as a personal learning and portfolio project.
-
-Suggestions and improvements are welcome.
 
 ---
 
 👩‍💻 Developer
 
 Priya Tiwari
+B.Tech CSE — NIT Patna
 
-B.Tech — Computer Science & Engineering
-NIT Patna
-
-Connect
-
-- GitHub: (https://github.com/Tiwari-priya16)
-
+GitHub: https://github.com/Tiwari-priya16/
 ---
 
-⭐ Why CodeForge?
+⭐ Summary
 
-CodeForge is more than a simple coding website. The project is being developed to understand how a real-world platform works across multiple layers:
-
-Frontend
-   ↓
-API Layer
-   ↓
-Authentication & Authorization
-   ↓
-Business Logic
-   ↓
-Database
-   ↓
-Code Evaluation
-
-The goal is to gradually transform the project into a production-style online coding platform while continuously improving its architecture, functionality, security, and user experience.
+CodeForge is a full-stack coding platform designed to simulate real-world system design with problem solving, authentication, admin control, and a self-hosted Judge0-based code execution engine.
 
 ---
 
 📜 License
 
-This project is developed for educational and portfolio purposes.
+Educational & portfolio project
