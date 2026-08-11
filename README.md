@@ -278,7 +278,8 @@ docker-compose up -d
 Priya Tiwari
 B.Tech CSE — NIT Patna
 
-GitHub: https://github.com/Tiwari-priya16/
+GitHub: Tiwari-priya16
+
 ---
 
 ⭐ Summary
