@@ -14,7 +14,9 @@ const SubmissionHistory = ({ problemId }) => {
         const response = await axiosClient.get(
           `/problem/submittedProblem/${problemId}`,
         );
-        setSubmissions(response.data);
+        // Sort newest first
+        const sorted = (response.data || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setSubmissions(sorted);
         setError(null);
       } catch (err) {
         setError("Failed to fetch submission history");
@@ -27,187 +29,143 @@ const SubmissionHistory = ({ problemId }) => {
     fetchSubmissions();
   }, [problemId]);
 
-  const getStatusColor = (status) => {
-    switch (status) {
+  const getStatusBadge = (status) => {
+    const s = (status || '').toLowerCase();
+    switch (s) {
       case "accepted":
-        return "badge-success";
+        return "badge-success text-success-content font-bold";
       case "wrong":
-        return "badge-error";
+        return "badge-error text-error-content font-bold";
       case "error":
-        return "badge-warning";
+        return "badge-warning text-warning-content font-bold";
       case "pending":
-        return "badge-info";
+        return "badge-info text-info-content font-bold";
       default:
         return "badge-neutral";
     }
   };
 
   const formatMemory = (memory) => {
+    if (!memory) return '0 kB';
     if (memory < 1024) return `${memory} kB`;
     return `${(memory / 1024).toFixed(2)} MB`;
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString();
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <span className="loading loading-spinner loading-lg"></span>
+      <div className="flex justify-center items-center h-48">
+        <span className="loading loading-spinner loading-md text-primary"></span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="alert alert-error shadow-lg my-4">
-        <div>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="stroke-current flex-shrink-0 h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <span>{error}</span>
-        </div>
+      <div className="alert alert-error shadow-sm text-xs p-3 my-2">
+        <span>{error}</span>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-6 text-center">
-        Submission History
-      </h2>
-
+    <div className="space-y-4">
       {submissions.length === 0 ? (
-        <div className="alert alert-info shadow-lg">
-          <div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="stroke-current flex-shrink-0 h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
-            <span>No submissions found for this problem</span>
-          </div>
+        <div className="bg-base-200/60 border border-base-200 rounded-xl p-6 text-center text-xs text-base-content/60">
+          No submission history found for this problem yet.
         </div>
       ) : (
-        <>
-          <div className="overflow-x-auto">
-            <table className="table table-zebra w-full">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Language</th>
-                  <th>Status</th>
-                  <th>Runtime</th>
-                  <th>Memory</th>
-                  <th>Test Cases</th>
-                  <th>Submitted</th>
-                  <th>Actions</th>
+        <div className="overflow-x-auto rounded-xl border border-base-200 bg-base-100 shadow-sm">
+          <table className="table table-compact w-full text-xs">
+            <thead className="bg-base-200/70 text-base-content/70">
+              <tr>
+                <th className="py-2.5">#</th>
+                <th className="py-2.5">Status</th>
+                <th className="py-2.5">Lang</th>
+                <th className="py-2.5">Runtime</th>
+                <th className="py-2.5">Memory</th>
+                <th className="py-2.5">Test Cases</th>
+                <th className="py-2.5">Submitted</th>
+                <th className="py-2.5 text-right">Code</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-base-200">
+              {submissions.map((sub, index) => (
+                <tr key={sub._id || index} className="hover:bg-base-200/40 transition-colors">
+                  <td className="font-mono text-base-content/60">{index + 1}</td>
+                  <td>
+                    <span className={`badge badge-xs uppercase text-[10px] px-2 py-1 ${getStatusBadge(sub.status)}`}>
+                      {sub.status}
+                    </span>
+                  </td>
+                  <td className="font-mono font-semibold">{sub.language}</td>
+                  <td className="font-mono">{sub.runtime || 0}s</td>
+                  <td className="font-mono">{formatMemory(sub.memory)}</td>
+                  <td className="font-mono font-bold text-primary">
+                    {sub.testCasesPassed || 0} / {sub.testCasesTotal || 11}
+                  </td>
+                  <td className="text-base-content/70 text-[11px]">{formatDate(sub.createdAt)}</td>
+                  <td className="text-right">
+                    <button
+                      className="btn btn-xs btn-ghost btn-outline text-primary border-primary/30 hover:bg-primary hover:text-white"
+                      onClick={() => setSelectedSubmission(sub)}
+                    >
+                      View
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {submissions.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" className="text-center py-4">
-                      No submissions yet
-                    </td>
-                  </tr>
-                ) : (
-                  submissions.map((sub, index) => (
-                    <tr key={sub._id}>
-                      <td>{index + 1}</td>
-                      <td className="font-mono">{sub.language}</td>
-                      <td>
-                        <span className={`badge ${getStatusColor(sub.status)}`}>
-                          {sub.status.charAt(0).toUpperCase() +
-                            sub.status.slice(1)}
-                        </span>
-                      </td>
-                      <td className="font-mono">{sub.runtime}sec</td>
-                      <td className="font-mono">{formatMemory(sub.memory)}</td>
-                      <td>{formatDate(sub.createdAt)}</td>
-                      <td>
-                        <button
-                          className="btn btn-sm btn-outline"
-                          onClick={() => setSelectedSubmission(sub)}
-                        >
-                          Code
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          <p className="mt-4 text-sm text-gray-500">
-            Showing {submissions.length} submissions
-          </p>
-        </>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {/* Code View Modal */}
       {selectedSubmission && (
-        <div className="modal modal-open">
-          <div className="modal-box w-11/12 max-w-5xl">
-            <h3 className="font-bold text-lg mb-4">
-              Submission Details: {selectedSubmission.language}
-            </h3>
-
-            <div className="mb-4">
-              <div className="flex flex-wrap gap-2 mb-2">
-                <span
-                  className={`badge ${getStatusColor(selectedSubmission.status)}`}
-                >
+        <div className="modal modal-open z-[250]">
+          <div className="modal-box w-11/12 max-w-3xl bg-slate-900 border border-slate-800 text-slate-100 p-6 rounded-2xl shadow-2xl">
+            <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <span className={`badge badge-sm font-bold uppercase ${getStatusBadge(selectedSubmission.status)}`}>
                   {selectedSubmission.status}
                 </span>
-                <span className="badge badge-outline">
-                  Runtime: {selectedSubmission.runtime}s
-                </span>
-                <span className="badge badge-outline">
-                  Memory: {formatMemory(selectedSubmission.memory)}
-                </span>
-                <span className="badge badge-outline">
-                  Passed: {selectedSubmission.testCasesPassed}/
-                  {selectedSubmission.testCasesTotal}
+                <span className="text-sm font-bold text-slate-300">
+                  {selectedSubmission.language} Submission
                 </span>
               </div>
-
-              {selectedSubmission.errorMessage && (
-                <div className="alert alert-error mt-2">
-                  <div>
-                    <span>{selectedSubmission.errorMessage}</span>
-                  </div>
-                </div>
-              )}
+              <span className="text-xs font-mono text-slate-400">
+                {formatDate(selectedSubmission.createdAt)}
+              </span>
             </div>
 
-            <pre className="p-4 bg-gray-900 text-gray-100 rounded overflow-x-auto">
-              <code>{selectedSubmission.code}</code>
-            </pre>
+            <div className="flex gap-4 mb-4 font-mono text-xs text-slate-300 bg-slate-950 p-3 rounded-xl border border-slate-800">
+              <div>Runtime: <strong className="text-emerald-400">{selectedSubmission.runtime || 0}s</strong></div>
+              <div>Memory: <strong className="text-emerald-400">{formatMemory(selectedSubmission.memory)}</strong></div>
+              <div>Test Cases: <strong className="text-emerald-400">{selectedSubmission.testCasesPassed || 0} / {selectedSubmission.testCasesTotal || 11}</strong></div>
+            </div>
 
-            <div className="modal-action">
+            {selectedSubmission.errorMessage && (
+              <div className="bg-red-950/80 border border-red-800/80 text-red-300 p-3 rounded-xl text-xs font-mono mb-4 whitespace-pre-wrap">
+                {selectedSubmission.errorMessage}
+              </div>
+            )}
+
+            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-slate-200 overflow-x-auto max-h-96">
+              <pre><code>{selectedSubmission.code}</code></pre>
+            </div>
+
+            <div className="modal-action mt-4">
               <button
-                className="btn"
+                className="btn btn-xs btn-neutral"
                 onClick={() => setSelectedSubmission(null)}
               >
                 Close

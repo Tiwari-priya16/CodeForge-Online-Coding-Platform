@@ -31,6 +31,28 @@ const userSchema = new Schema({
         enum:['user','admin'],
         default: 'user'
     },
+    username:{
+        type: String,
+        trim: true,
+        lowercase: true,
+        default: ''
+    },
+    bio:{
+        type: String,
+        default: 'DSA Enthusiast & Developer'
+    },
+    githubUrl:{
+        type: String,
+        default: ''
+    },
+    linkedinUrl:{
+        type: String,
+        default: ''
+    },
+    profilePic:{
+        type: String,
+        default: ''
+    },
     problemSolved:{
         type:[{
             type:Schema.Types.ObjectId,

@@ -1,10 +1,31 @@
 const redisClient = require("../config/redis");
-const User =  require("../models/user")
+const User = require("../models/user");
 const validate = require('../utils/validator');
 const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
-const Submission = require("../models/submission")
+const Submission = require("../models/submission");
 
+const JWT_SECRET = process.env.JWT_KEY || 'CodeForge_JWT_Secret_Key_2026';
+
+const COOKIE_OPTIONS = {
+    maxAge: 60 * 60 * 1000,
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/'
+};
+
+const makeUserReply = (user) => ({
+    _id: user._id,
+    firstName: user.firstName,
+    lastName: user.lastName || '',
+    emailId: user.emailId,
+    username: user.username || user.emailId.split('@')[0],
+    role: user.role,
+    bio: user.bio || 'DSA Enthusiast & Developer',
+    githubUrl: user.githubUrl || '',
+    linkedinUrl: user.linkedinUrl || '',
+    profilePic: user.profilePic || ''
+});
 
 const register = async (req,res)=>{
     
@@ -12,25 +33,21 @@ const register = async (req,res)=>{
         // validate the data;
 
       validate(req.body); 
-      const {firstName, emailId, password}  = req.body;
+      const {firstName, lastName, username, emailId, password}  = req.body;
 
       req.body.password = await bcrypt.hash(password, 10);
-      req.body.role = 'user'
-    //
+      req.body.role = 'user';
+      if (!req.body.username && emailId) {
+        req.body.username = emailId.split('@')[0];
+      }
     
      const user =  await User.create(req.body);
-     const token =  jwt.sign({_id:user._id , emailId:emailId, role:'user'},process.env.JWT_KEY,{expiresIn: 60*60});
-     const reply = {
-        firstName: user.firstName,
-        emailId: user.emailId,
-        _id: user._id,
-        role:user.role,
-    }
-    
-     res.cookie('token',token,{maxAge: 60*60*1000});
+     const token =  jwt.sign({_id:user._id , emailId:emailId, role:'user'}, JWT_SECRET, {expiresIn: 60*60});
+
+     res.cookie('token', token, COOKIE_OPTIONS);
      res.status(201).json({
-        user:reply,
-        message:"Loggin Successfully"
+        user: makeUserReply(user),
+        message:"Logged in Successfully"
     })
     }
     catch(err){
@@ -50,24 +67,20 @@ const login = async (req,res)=>{
             throw new Error("Invalid Credentials");
 
         const user = await User.findOne({emailId});
+        if (!user) {
+            throw new Error("Invalid Credentials");
+        }
 
         const match = await bcrypt.compare(password,user.password);
 
         if(!match)
             throw new Error("Invalid Credentials");
 
-        const reply = {
-            firstName: user.firstName,
-            emailId: user.emailId,
-            _id: user._id,
-            role:user.role,
-        }
-
-        const token =  jwt.sign({_id:user._id , emailId:emailId, role:user.role},process.env.JWT_KEY,{expiresIn: 60*60});
-        res.cookie('token',token,{maxAge: 60*60*1000});
+        const token =  jwt.sign({_id:user._id , emailId:emailId, role:user.role}, JWT_SECRET, {expiresIn: 60*60});
+        res.cookie('token', token, COOKIE_OPTIONS);
         res.status(201).json({
-            user:reply,
-            message:"Loggin Successfully"
+            user: makeUserReply(user),
+            message:"Logged in Successfully"
         })
     }
     catch(err){
@@ -82,16 +95,16 @@ const logout = async(req,res)=>{
 
     try{
         const {token} = req.cookies;
-        const payload = jwt.decode(token);
+        if (token) {
+            const payload = jwt.decode(token);
+            if (payload && payload.exp) {
+                await redisClient.set(`token:${token}`, 'Blocked');
+                await redisClient.expireAt(`token:${token}`, payload.exp);
+            }
+        }
 
-
-        await redisClient.set(`token:${token}`,'Blocked');
-        await redisClient.expireAt(`token:${token}`,payload.exp);
-    //    Token add kar dung Redis ke blockList
-    //    Cookies ko clear kar dena.....
-
-    res.cookie("token",null,{expires: new Date(Date.now())});
-    res.send("Logged Out Succesfully");
+        res.cookie("token", null, { expires: new Date(0), path: '/' });
+        res.send("Logged Out Succesfully");
 
     }
     catch(err){
@@ -102,18 +115,14 @@ const logout = async(req,res)=>{
 
 const adminRegister = async(req,res)=>{
     try{
-        // validate the data;
-    //   if(req.result.role!='admin')
-    //     throw new Error("Invalid Credentials");  
-      validate(req.body); 
+      validate(req.body);
       const {firstName, emailId, password}  = req.body;
 
       req.body.password = await bcrypt.hash(password, 10);
-    //
-    
+
      const user =  await User.create(req.body);
-     const token =  jwt.sign({_id:user._id , emailId:emailId, role:user.role},process.env.JWT_KEY,{expiresIn: 60*60});
-     res.cookie('token',token,{maxAge: 60*60*1000});
+     const token =  jwt.sign({_id:user._id , emailId:emailId, role:user.role}, JWT_SECRET, {expiresIn: 60*60});
+     res.cookie('token', token, COOKIE_OPTIONS);
      res.status(201).send("User Registered Successfully");
     }
     catch(err){
@@ -126,13 +135,8 @@ const deleteProfile = async(req,res)=>{
     try{
        const userId = req.result._id;
       
-    // userSchema delete
     await User.findByIdAndDelete(userId);
 
-    // Submission se bhi delete karo...
-    
-    // await Submission.deleteMany({userId});
-    
     res.status(200).send("Deleted Successfully");
 
     }
@@ -143,4 +147,51 @@ const deleteProfile = async(req,res)=>{
 }
 
 
-module.exports = {register, login,logout,adminRegister,deleteProfile};
+const updateAvatar = async (req, res) => {
+    try {
+        const { profilePic } = req.body;
+        if (!profilePic) {
+            return res.status(400).send("Profile picture URL is required");
+        }
+
+        const user = req.result;
+        user.profilePic = profilePic;
+        await user.save();
+
+        res.status(200).json({
+            user: makeUserReply(user),
+            message: "Profile picture updated successfully"
+        });
+    } catch (err) {
+        res.status(500).send("Error updating avatar: " + err.message);
+    }
+};
+
+const updateProfile = async (req, res) => {
+    try {
+        const { firstName, lastName, username, bio, githubUrl, linkedinUrl, newPassword } = req.body;
+        const user = req.result;
+
+        if (firstName) user.firstName = firstName;
+        if (lastName !== undefined) user.lastName = lastName;
+        if (username) user.username = username.toLowerCase();
+        if (bio !== undefined) user.bio = bio;
+        if (githubUrl !== undefined) user.githubUrl = githubUrl;
+        if (linkedinUrl !== undefined) user.linkedinUrl = linkedinUrl;
+
+        if (newPassword && newPassword.trim().length >= 6) {
+            user.password = await bcrypt.hash(newPassword, 10);
+        }
+
+        await user.save();
+
+        res.status(200).json({
+            user: makeUserReply(user),
+            message: "Profile updated successfully"
+        });
+    } catch (err) {
+        res.status(500).send("Error updating profile: " + err.message);
+    }
+};
+
+module.exports = {register, login, logout, adminRegister, deleteProfile, updateAvatar, updateProfile, makeUserReply};

@@ -1,83 +1,125 @@
 import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import ReactMarkdown from "react-markdown";
 import axiosClient from "../utils/axiosClient";
-import { Send } from 'lucide-react';
+import { Send, Bot, User, Loader2 } from 'lucide-react';
 
-function ChatAi({problem}) {
+function ChatAi({ problem }) {
     const [messages, setMessages] = useState([
-        { role: 'model', parts:[{text: "Hi, How are you"}]},
-        { role: 'user', parts:[{text: "I am Good"}]}
+        {
+            role: 'model',
+            parts: [{ text: `Hello! I'm your AI DSA Tutor. I can help you with hints, edge cases, or code reviews for **${problem?.title || 'this problem'}**. How can I assist you?` }]
+        }
     ]);
+    const [loading, setLoading] = useState(false);
 
-    const { register, handleSubmit, reset,formState: {errors} } = useForm();
+    const { register, handleSubmit, reset, formState: { errors } } = useForm();
     const messagesEndRef = useRef(null);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages]);
+    }, [messages, loading]);
 
     const onSubmit = async (data) => {
-        
-        setMessages(prev => [...prev, { role: 'user', parts:[{text: data.message}] }]);
+        const userPrompt = data.message.trim();
+        if (!userPrompt) return;
+
+        const userMsg = { role: 'user', parts: [{ text: userPrompt }] };
+        const updatedMessages = [...messages, userMsg];
+
+        setMessages(updatedMessages);
         reset();
+        setLoading(true);
 
         try {
-            
             const response = await axiosClient.post("/ai/chat", {
-                messages:messages,
-                title:problem.title,
-                description:problem.description,
-                testCases: problem.visibleTestCases,
-                startCode:problem.startCode
+                messages: updatedMessages,
+                title: problem?.title,
+                description: problem?.description,
+                testCases: problem?.visibleTestCases,
+                startCode: problem?.startCode
             });
 
-           
-            setMessages(prev => [...prev, { 
-                role: 'model', 
-                parts:[{text: response.data.message}] 
-            }]);
+            setMessages(prev => [
+                ...prev,
+                { role: 'model', parts: [{ text: response.data.message || "I couldn't generate a response. Please try again." }] }
+            ]);
         } catch (error) {
             console.error("API Error:", error);
-            setMessages(prev => [...prev, { 
-                role: 'model', 
-                parts:[{text: "Error from AI Chatbot"}]
-            }]);
+            setMessages(prev => [
+                ...prev,
+                { role: 'model', parts: [{ text: "⚠️ Network error or AI service busy. Please try again." }] }
+            ]);
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="flex flex-col h-screen max-h-[80vh] min-h-[500px]">
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex flex-col h-full max-h-[78vh] bg-base-100 rounded-xl overflow-hidden border border-base-200">
+            {/* Messages Container */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs leading-relaxed select-text">
                 {messages.map((msg, index) => (
                     <div 
                         key={index} 
-                        className={`chat ${msg.role === "user" ? "chat-end" : "chat-start"}`}
+                        className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
                     >
-                        <div className="chat-bubble bg-base-200 text-base-content">
-                            {msg.parts[0].text}
+                        {/* Avatar */}
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === "user" ? "bg-primary text-primary-content" : "bg-neutral text-neutral-content"}`}>
+                            {msg.role === "user" ? <User size={14} /> : <Bot size={14} />}
+                        </div>
+
+                        {/* Bubble */}
+                        <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 ${msg.role === "user" ? "bg-primary text-primary-content font-medium rounded-tr-none" : "bg-base-200 text-base-content rounded-tl-none border border-base-300"}`}>
+                            <ReactMarkdown
+                                components={{
+                                    p: ({ node, ...props }) => <p className="mb-1.5 last:mb-0" {...props} />,
+                                    strong: ({ node, ...props }) => <strong className="font-bold text-primary" {...props} />,
+                                    code: ({ node, ...props }) => <code className="bg-base-300 px-1.5 py-0.5 rounded font-mono text-[11px]" {...props} />,
+                                    ul: ({ node, ...props }) => <ul className="list-disc list-inside my-1 space-y-1" {...props} />,
+                                    ol: ({ node, ...props }) => <ol className="list-decimal list-inside my-1 space-y-1" {...props} />
+                                }}
+                            >
+                                {msg.parts[0].text}
+                            </ReactMarkdown>
                         </div>
                     </div>
                 ))}
+
+                {/* AI Thinking Indicator */}
+                {loading && (
+                    <div className="flex gap-2.5 items-center text-xs text-base-content/60 italic">
+                        <div className="w-7 h-7 rounded-full bg-neutral text-neutral-content flex items-center justify-center">
+                            <Bot size={14} />
+                        </div>
+                        <div className="flex items-center gap-1.5 bg-base-200 px-3 py-2 rounded-2xl border border-base-300">
+                            <Loader2 size={13} className="animate-spin text-primary" />
+                            <span>Thinking & analyzing problem...</span>
+                        </div>
+                    </div>
+                )}
+
                 <div ref={messagesEndRef} />
             </div>
-            <form 
+
+            {/* Sticky Form Bar */}
+            <form
                 onSubmit={handleSubmit(onSubmit)} 
-                className="sticky bottom-0 p-4 bg-base-100 border-t"
+                className="p-3 bg-base-200/80 border-t border-base-300 flex items-center gap-2"
             >
-                <div className="flex items-center">
-                    <input 
-                        placeholder="Ask me anything" 
-                        className="input input-bordered flex-1" 
-                        {...register("message", { required: true, minLength: 2 })}
-                    />
-                    <button 
-                        type="submit" 
-                        className="btn btn-ghost ml-2"
-                        disabled={errors.message}
-                    >
-                        <Send size={20} />
-                    </button>
-                </div>
+                <input
+                    placeholder="Ask for a hint, code review, or approach..."
+                    className="input input-sm input-bordered flex-1 bg-base-100 rounded-lg text-xs"
+                    autoComplete="off"
+                    {...register("message", { required: true, minLength: 1 })}
+                />
+                <button
+                    type="submit"
+                    className="btn btn-sm btn-primary gap-1"
+                    disabled={loading || errors.message}
+                >
+                    {loading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                </button>
             </form>
         </div>
     );

@@ -5,10 +5,10 @@ export const registerUser = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
-    const response =  await axiosClient.post('/user/register', userData);
-    return response.data.user;
+      const response = await axiosClient.post('/user/register', userData);
+      return response.data.user;
     } catch (error) {
-      return rejectWithValue(error);
+      return rejectWithValue(error.response?.data?.message || error.response?.data || error.message);
     }
   }
 );
@@ -21,7 +21,7 @@ export const loginUser = createAsyncThunk(
       const response = await axiosClient.post('/user/login', credentials);
       return response.data.user;
     } catch (error) {
-      return rejectWithValue(error);
+      return rejectWithValue(error.response?.data?.message || error.response?.data || error.message);
     }
   }
 );
@@ -62,6 +62,14 @@ const authSlice = createSlice({
     error: null
   },
   reducers: {
+    clearError: (state) => {
+      state.error = null;
+    },
+    updateUserProfilePic: (state, action) => {
+      if (state.user) {
+        state.user.profilePic = action.payload;
+      }
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -102,16 +110,16 @@ const authSlice = createSlice({
       // Check Auth Cases
       .addCase(checkAuth.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
       .addCase(checkAuth.fulfilled, (state, action) => {
         state.loading = false;
         state.isAuthenticated = !!action.payload;
         state.user = action.payload;
+        state.error = null;
       })
-      .addCase(checkAuth.rejected, (state, action) => {
+      .addCase(checkAuth.rejected, (state) => {
         state.loading = false;
-        state.error = action.payload?.message || 'Something went wrong';
+        state.error = null; // Do not set error when unauthenticated on initial page load
         state.isAuthenticated = false;
         state.user = null;
       })
@@ -136,4 +144,5 @@ const authSlice = createSlice({
   }
 });
 
+export const { updateUserProfilePic, clearError } = authSlice.actions;
 export default authSlice.reducer;

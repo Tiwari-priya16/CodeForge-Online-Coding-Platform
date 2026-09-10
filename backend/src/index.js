@@ -18,7 +18,8 @@ app.use(cors({
     credentials: true 
 }))
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 
 app.use('/user',authRouter);
@@ -30,9 +31,15 @@ app.use("/video",videoRouter);
 
 const InitalizeConnection = async ()=>{
     try{
+        await main();
+        console.log("MongoDB Connected");
 
-        await Promise.all([main(),redisClient.connect()]);
-        console.log("DB Connected");
+        try {
+            await redisClient.connect();
+            console.log("Redis Connected");
+        } catch (redisErr) {
+            console.error("Redis Connection Warning:", redisErr.message);
+        }
         
         app.listen(process.env.PORT, ()=>{
             console.log("Server listening at port number: "+ process.env.PORT);

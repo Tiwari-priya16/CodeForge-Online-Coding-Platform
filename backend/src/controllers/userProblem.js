@@ -226,7 +226,8 @@ const solvedAllProblembyUser =  async(req,res)=>{
         select:"_id title difficulty tags"
       });
       
-      res.status(200).send(user.problemSolved);
+      const cleanSolved = (user.problemSolved || []).filter(p => p !== null);
+      res.status(200).send(cleanSolved);
 
     }
     catch(err){

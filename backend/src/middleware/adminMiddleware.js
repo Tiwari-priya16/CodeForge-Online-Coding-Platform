@@ -8,9 +8,10 @@ const adminMiddleware = async (req,res,next)=>{
        
         const {token} = req.cookies;
         if(!token)
-            throw new Error("Token is not persent");
+            throw new Error("Token is not present");
 
-        const payload = jwt.verify(token,process.env.JWT_KEY);
+        const JWT_SECRET = process.env.JWT_KEY || 'CodeForge_JWT_Secret_Key_2026';
+        const payload = jwt.verify(token, JWT_SECRET);
 
         const {_id} = payload;
 

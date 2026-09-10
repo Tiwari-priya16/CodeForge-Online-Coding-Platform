@@ -108,29 +108,51 @@ const axios = require('axios');
 
 const getLanguageById = (lang) => {
     const language = {
+        "c": 50,
         "c++": 54,
+        "cpp": 54,
         "java": 62,
-        "javascript": 63
+        "javascript": 63,
+        "python": 71
     };
 
-    return language[lang.toLowerCase()];
+    return language[lang.toLowerCase()] || 63;
 };
 
+const encodeBase64 = (str) => {
+    if (!str) return '';
+    return Buffer.from(str, 'utf-8').toString('base64');
+};
 
-// Submit multiple test cases to YOUR Azure Judge0
+const decodeBase64 = (str) => {
+    if (!str) return '';
+    try {
+        return Buffer.from(str, 'base64').toString('utf-8');
+    } catch (e) {
+        return str;
+    }
+};
+
+// Submit multiple test cases to YOUR Azure Judge0 with Base64 encoding
 const submitBatch = async (submissions) => {
+    const encodedSubmissions = submissions.map(sub => ({
+        source_code: encodeBase64(sub.source_code),
+        language_id: sub.language_id,
+        stdin: encodeBase64(sub.stdin),
+        expected_output: encodeBase64(sub.expected_output)
+    }));
 
     const options = {
         method: 'POST',
         url: `${process.env.JUDGE0_URL}/submissions/batch`,
         params: {
-            base64_encoded: 'false'
+            base64_encoded: 'true'
         },
         headers: {
             'Content-Type': 'application/json'
         },
         data: {
-            submissions
+            submissions: encodedSubmissions
         }
     };
 
@@ -146,22 +168,19 @@ const submitBatch = async (submissions) => {
     }
 };
 
-
 // Proper delay function
 const waiting = (timer) => {
     return new Promise(resolve => setTimeout(resolve, timer));
 };
 
-
-// Get submission results from YOUR Azure Judge0
+// Get submission results from YOUR Azure Judge0 with Base64 decoding
 const submitToken = async (resultToken) => {
-
     const options = {
         method: 'GET',
         url: `${process.env.JUDGE0_URL}/submissions/batch`,
         params: {
             tokens: resultToken.join(","),
-            base64_encoded: 'false',
+            base64_encoded: 'true',
             fields: '*'
         },
         headers: {
@@ -182,22 +201,26 @@ const submitToken = async (resultToken) => {
         }
     };
 
-
     while (true) {
-
         const result = await fetchData();
 
-        const isResultObtained =
-            result.submissions.every((r) => r.status_id > 2);
+        const isResultObtained = result.submissions.every((r) => r.status_id > 2);
 
         if (isResultObtained) {
-            return result.submissions;
+            return result.submissions.map(sub => ({
+                ...sub,
+                stdin: decodeBase64(sub.stdin),
+                expected_output: decodeBase64(sub.expected_output),
+                stdout: decodeBase64(sub.stdout),
+                stderr: decodeBase64(sub.stderr),
+                compile_output: decodeBase64(sub.compile_output),
+                message: decodeBase64(sub.message)
+            }));
         }
 
         await waiting(1000);
     }
 };
-
 
 module.exports = {
     getLanguageById,
