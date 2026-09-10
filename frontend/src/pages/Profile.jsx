@@ -4,7 +4,7 @@ import { NavLink } from 'react-router';
 import Navbar from '../components/Navbar';
 import axiosClient from '../utils/axiosClient';
 import { logoutUser, checkAuth } from '../authSlice';
-import { CheckCircle2, Award, LogOut, Code2, ShieldAlert, Camera, Loader2, Edit3, Key, AtSign, Mail, Github, Linkedin, Lock, User as UserIcon } from 'lucide-react';
+import { CheckCircle2, Award, LogOut, Code2, ShieldAlert, Camera, Loader2, Edit3, Key, Mail, Github, Linkedin, Target, Activity } from 'lucide-react';
 
 function Profile() {
   const dispatch = useDispatch();
@@ -12,6 +12,7 @@ function Profile() {
 
   const [allProblems, setAllProblems] = useState([]);
   const [solvedProblems, setSolvedProblems] = useState([]);
+  const [userStats, setUserStats] = useState({ totalSubmissions: 0, acceptedSubmissions: 0, accuracy: 100 });
   const [loading, setLoading] = useState(true);
   const [uploadingImg, setUploadingImg] = useState(false);
 
@@ -48,12 +49,14 @@ function Profile() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [probsRes, solvedRes] = await Promise.all([
+        const [probsRes, solvedRes, statsRes] = await Promise.all([
           axiosClient.get('/problem/getAllProblem'),
-          axiosClient.get('/problem/problemSolvedByUser')
+          axiosClient.get('/problem/problemSolvedByUser'),
+          axiosClient.get('/problem/userStats').catch(() => ({ data: { accuracy: 100, totalSubmissions: 0 } }))
         ]);
         setAllProblems(probsRes.data || []);
         setSolvedProblems(solvedRes.data || []);
+        setUserStats(statsRes.data || { accuracy: 100, totalSubmissions: 0 });
       } catch (err) {
         console.error('Error fetching profile stats:', err);
       } finally {
@@ -95,7 +98,6 @@ function Profile() {
           profilePic: base64Image
         });
 
-        // Re-check auth to sync updated user in Redux
         dispatch(checkAuth());
         setUploadingImg(false);
       };
@@ -124,25 +126,24 @@ function Profile() {
     }
   };
 
-  const totalQuestions = allProblems.length || 100;
+  // Dynamic Counts based on actual DB problems
+  const totalQuestions = allProblems.length;
   const solvedCount = solvedProblems.length;
-  const percentage = Math.round((solvedCount / totalQuestions) * 100);
 
-  // Breakdown by difficulty
   const easySolved = solvedProblems.filter((p) => p.difficulty?.toLowerCase() === 'easy').length;
   const mediumSolved = solvedProblems.filter((p) => p.difficulty?.toLowerCase() === 'medium').length;
   const hardSolved = solvedProblems.filter((p) => p.difficulty?.toLowerCase() === 'hard').length;
 
-  const totalEasy = allProblems.filter((p) => p.difficulty?.toLowerCase() === 'easy').length || 50;
-  const totalMedium = allProblems.filter((p) => p.difficulty?.toLowerCase() === 'medium').length || 30;
-  const totalHard = allProblems.filter((p) => p.difficulty?.toLowerCase() === 'hard').length || 20;
+  const totalEasy = allProblems.filter((p) => p.difficulty?.toLowerCase() === 'easy').length;
+  const totalMedium = allProblems.filter((p) => p.difficulty?.toLowerCase() === 'medium').length;
+  const totalHard = allProblems.filter((p) => p.difficulty?.toLowerCase() === 'hard').length;
 
   const initial = user?.firstName ? user.firstName.charAt(0).toUpperCase() : 'U';
   const fullName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'User';
   const userHandle = user?.username ? `@${user.username}` : `@${user?.emailId?.split('@')[0] || 'user'}`;
 
   return (
-    <div className="min-h-screen bg-base-200">
+    <div className="min-h-screen bg-slate-950 text-slate-100">
       <Navbar title="User Profile" />
 
       <div className="container mx-auto p-4 md:p-6 space-y-6 max-w-6xl">
@@ -155,93 +156,164 @@ function Profile() {
           onChange={handleImageChange}
         />
 
-        {/* User Info Header Card */}
-        <div className="card bg-base-100 shadow-xl border border-base-300">
-          <div className="card-body flex-col md:flex-row items-center md:items-start gap-6 p-6">
-            {/* Clickable Large Avatar Circle with Camera Overlay */}
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="relative group cursor-pointer w-28 h-28 rounded-full overflow-hidden shadow-xl border-2 border-primary flex items-center justify-center bg-primary text-primary-content shrink-0"
-              title="Click to change profile picture"
-            >
-              {user?.profilePic ? (
-                <img src={user.profilePic} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-4xl font-bold">{initial}</span>
-              )}
+        {/* LeetCode Style Top Section Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Left Column: User Profile Card */}
+          <div className="card bg-slate-900 border border-slate-800 p-6 shadow-xl space-y-5">
+            <div className="flex items-center gap-4">
+              {/* Clickable Large Avatar Circle with Sleek Edit Button Overlay */}
+              <div className="relative group shrink-0">
+                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-emerald-500/80 shadow-lg flex items-center justify-center bg-slate-800 text-slate-200">
+                  {user?.profilePic ? (
+                    <img src={user.profilePic} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-3xl font-extrabold">{initial}</span>
+                  )}
+                </div>
 
-              {/* Hover / Loading Overlay */}
-              <div className={`absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white transition-opacity ${uploadingImg ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                {uploadingImg ? (
-                  <Loader2 size={22} className="animate-spin" />
-                ) : (
-                  <>
-                    <Camera size={20} />
-                    <span className="text-[10px] font-bold mt-1 uppercase">Upload</span>
-                  </>
-                )}
+                {/* Hover Camera/Edit Badge Button */}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-0 right-0 p-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-full shadow-md transition-transform hover:scale-110 cursor-pointer"
+                  title="Edit Avatar / Change Photo"
+                >
+                  {uploadingImg ? (
+                    <Loader2 size={13} className="animate-spin" />
+                  ) : user?.profilePic ? (
+                    <Edit3 size={13} />
+                  ) : (
+                    <Camera size={13} />
+                  )}
+                </button>
+              </div>
+
+              {/* Basic Details */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl font-bold tracking-tight text-white">{fullName}</h1>
+                  <span className={`badge ${user?.role === 'admin' ? 'badge-warning' : 'badge-neutral'} uppercase font-bold text-[10px]`}>
+                    {user?.role}
+                  </span>
+                </div>
+                <div className="text-xs font-semibold text-emerald-400 font-mono">{userHandle}</div>
+                <p className="text-xs text-slate-400 italic leading-relaxed">{user?.bio || 'Beginner with learning mindset...'}</p>
               </div>
             </div>
 
-            {/* Profile Info */}
-            <div className="flex-1 text-center md:text-left space-y-2">
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                <h1 className="text-3xl font-extrabold">{fullName}</h1>
-                <span className="text-sm font-semibold text-primary font-mono">{userHandle}</span>
-                <span className={`badge ${user?.role === 'admin' ? 'badge-warning' : 'badge-neutral'} uppercase font-bold text-xs`}>
-                  {user?.role}
-                </span>
+            {/* Email & Badges Row */}
+            <div className="pt-2 border-t border-slate-800/80 space-y-2 text-xs text-slate-300">
+              <div className="flex items-center gap-2 text-slate-400">
+                <Mail size={13} className="text-slate-500" />
+                <span className="truncate">{user?.emailId}</span>
               </div>
-
-              <p className="text-base-content/80 text-xs italic">{user?.bio || 'DSA Enthusiast & Developer'}</p>
-
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-1 text-xs font-semibold text-base-content/80">
-                <div className="flex items-center gap-1">
-                  <Mail size={14} className="text-base-content/50" /> {user?.emailId}
+              <div className="flex items-center gap-4 pt-1">
+                <div className="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 font-mono text-xs">
+                  <CheckCircle2 size={13} className="text-emerald-400" />
+                  <span className="text-slate-200 font-bold">{solvedCount} Solved</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <CheckCircle2 size={14} className="text-success" /> {solvedCount} Solved
-                </div>
-                <div className="flex items-center gap-1">
-                  <Award size={14} className="text-warning" /> {percentage}% Accuracy
+                <div className="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 font-mono text-xs">
+                  <Activity size={13} className="text-amber-400" />
+                  <span className="text-slate-200 font-bold">{userStats.accuracy}% Accuracy</span>
                 </div>
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex flex-wrap gap-2 justify-center md:justify-end">
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-2 pt-1">
               <button
                 onClick={() => setIsEditing(!isEditing)}
-                className="btn btn-sm btn-outline btn-primary gap-1"
+                className="btn btn-xs bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 gap-1 rounded-lg font-bold"
               >
-                <Edit3 size={14} /> Edit Profile
+                <Edit3 size={12} /> Edit Profile
               </button>
               {user?.role === 'admin' && (
-                <NavLink to="/admin" className="btn btn-sm btn-warning gap-1">
-                  <ShieldAlert size={14} /> Admin
+                <NavLink to="/admin" className="btn btn-xs btn-warning gap-1 rounded-lg">
+                  <ShieldAlert size={12} /> Admin
                 </NavLink>
               )}
-              <button onClick={handleLogout} className="btn btn-sm btn-outline btn-error gap-1">
-                <LogOut size={14} /> Logout
+              <button onClick={handleLogout} className="btn btn-xs btn-outline btn-error gap-1 rounded-lg">
+                <LogOut size={12} /> Logout
               </button>
+            </div>
+          </div>
+
+          {/* Right Column: LeetCode Style Problem Progress Grid */}
+          <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Total Solved Metric Card */}
+            <div className="card bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between shadow-xl">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 className="text-xs uppercase tracking-wider font-bold text-slate-400 flex items-center gap-1.5">
+                  <Target size={14} className="text-emerald-400" /> Total Solved Progress
+                </h3>
+                <span className="text-xs font-mono text-slate-400">Total: {totalQuestions}</span>
+              </div>
+
+              <div className="py-4 flex items-baseline gap-3">
+                <span className="text-5xl font-black text-emerald-400 tracking-tight">{solvedCount}</span>
+                <span className="text-slate-400 text-base font-bold font-mono">/ {totalQuestions} Solved</span>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs font-bold text-slate-400">
+                  <span>Overall Progress</span>
+                  <span className="text-emerald-400 font-mono">{totalQuestions > 0 ? Math.round((solvedCount / totalQuestions) * 100) : 0}%</span>
+                </div>
+                <progress className="progress progress-emerald w-full" value={solvedCount} max={totalQuestions || 1}></progress>
+              </div>
+            </div>
+
+            {/* Easy Progress Card */}
+            <div className="card bg-slate-900 border border-slate-800 p-5 space-y-3 shadow-xl">
+              <div className="flex justify-between items-center border-b border-slate-800/80 pb-2">
+                <span className="badge bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold text-xs uppercase px-2 py-0.5">
+                  Easy
+                </span>
+                <span className="text-xs font-mono font-bold text-slate-400">{easySolved} / {totalEasy}</span>
+              </div>
+              <div className="text-3xl font-extrabold text-emerald-400 font-mono">{easySolved}</div>
+              <progress className="progress progress-success w-full" value={easySolved} max={totalEasy || 1}></progress>
+            </div>
+
+            {/* Medium Progress Card */}
+            <div className="card bg-slate-900 border border-slate-800 p-5 space-y-3 shadow-xl">
+              <div className="flex justify-between items-center border-b border-slate-800/80 pb-2">
+                <span className="badge bg-amber-950 text-amber-400 border border-amber-800 font-bold text-xs uppercase px-2 py-0.5">
+                  Medium
+                </span>
+                <span className="text-xs font-mono font-bold text-slate-400">{mediumSolved} / {totalMedium}</span>
+              </div>
+              <div className="text-3xl font-extrabold text-amber-400 font-mono">{mediumSolved}</div>
+              <progress className="progress progress-warning w-full" value={mediumSolved} max={totalMedium || 1}></progress>
+            </div>
+
+            {/* Hard Progress Card */}
+            <div className="card bg-slate-900 border border-slate-800 p-5 space-y-3 shadow-xl">
+              <div className="flex justify-between items-center border-b border-slate-800/80 pb-2">
+                <span className="badge bg-rose-950 text-rose-400 border border-rose-800 font-bold text-xs uppercase px-2 py-0.5">
+                  Hard
+                </span>
+                <span className="text-xs font-mono font-bold text-slate-400">{hardSolved} / {totalHard}</span>
+              </div>
+              <div className="text-3xl font-extrabold text-rose-400 font-mono">{hardSolved}</div>
+              <progress className="progress progress-error w-full" value={hardSolved} max={totalHard || 1}></progress>
             </div>
           </div>
         </div>
 
         {/* Edit Profile Form Panel */}
         {isEditing && (
-          <div className="card bg-base-100 shadow-xl border border-primary/30 p-6">
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2 border-b border-base-200 pb-2">
-              <Edit3 size={18} className="text-primary" /> Edit Profile & Credentials
+          <div className="card bg-slate-900 border border-emerald-500/40 p-6 shadow-2xl rounded-2xl">
+            <h2 className="text-base font-bold mb-4 flex items-center gap-2 border-b border-slate-800 pb-3 text-emerald-400">
+              <Edit3 size={16} /> Edit Profile & Account Settings
             </h2>
 
             <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="form-control">
-                  <label className="label font-bold text-base-content">First Name</label>
+                  <label className="label font-bold text-slate-300">First Name</label>
                   <input
                     type="text"
-                    className="input input-bordered input-sm"
+                    className="input input-sm bg-slate-950 border border-slate-800 text-slate-100 rounded-lg"
                     value={editForm.firstName}
                     onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
                     required
@@ -249,10 +321,10 @@ function Profile() {
                 </div>
 
                 <div className="form-control">
-                  <label className="label font-bold text-base-content">Last Name</label>
+                  <label className="label font-bold text-slate-300">Last Name</label>
                   <input
                     type="text"
-                    className="input input-bordered input-sm"
+                    className="input input-sm bg-slate-950 border border-slate-800 text-slate-100 rounded-lg"
                     value={editForm.lastName}
                     onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
                   />
@@ -261,12 +333,12 @@ function Profile() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="form-control">
-                  <label className="label font-bold text-base-content">Username</label>
+                  <label className="label font-bold text-slate-300">Username</label>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-base-content/50">@</span>
+                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">@</span>
                     <input
                       type="text"
-                      className="input input-bordered input-sm pl-7 w-full"
+                      className="input input-sm bg-slate-950 border border-slate-800 text-slate-100 pl-7 w-full rounded-lg"
                       value={editForm.username}
                       onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
                     />
@@ -274,13 +346,13 @@ function Profile() {
                 </div>
 
                 <div className="form-control">
-                  <label className="label font-bold text-base-content">New Password (Optional)</label>
+                  <label className="label font-bold text-slate-300">New Password (Optional)</label>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-base-content/50"><Key size={13} /></span>
+                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500"><Key size={13} /></span>
                     <input
                       type="password"
                       placeholder="•••••••• (leave empty to keep current)"
-                      className="input input-bordered input-sm pl-8 w-full"
+                      className="input input-sm bg-slate-950 border border-slate-800 text-slate-100 pl-8 w-full rounded-lg"
                       value={editForm.newPassword}
                       onChange={(e) => setEditForm({ ...editForm, newPassword: e.target.value })}
                     />
@@ -289,9 +361,9 @@ function Profile() {
               </div>
 
               <div className="form-control">
-                <label className="label font-bold text-base-content">Bio / Headline</label>
+                <label className="label font-bold text-slate-300">Bio / Headline</label>
                 <textarea
-                  className="textarea textarea-bordered textarea-sm w-full"
+                  className="textarea bg-slate-950 border border-slate-800 text-slate-100 textarea-sm w-full rounded-lg"
                   rows={2}
                   value={editForm.bio}
                   onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
@@ -299,10 +371,10 @@ function Profile() {
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setIsEditing(false)} className="btn btn-xs btn-ghost">
+                <button type="button" onClick={() => setIsEditing(false)} className="btn btn-xs btn-ghost text-slate-400">
                   Cancel
                 </button>
-                <button type="submit" className={`btn btn-xs btn-primary gap-1 ${savingProfile ? 'loading' : ''}`} disabled={savingProfile}>
+                <button type="submit" className={`btn btn-xs btn-primary gap-1 font-bold ${savingProfile ? 'loading' : ''}`} disabled={savingProfile}>
                   {savingProfile ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
@@ -310,81 +382,30 @@ function Profile() {
           </div>
         )}
 
-        {/* LeetCode Style Problem Solving Progress Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Main Progress Overview Card */}
-          <div className="card bg-base-100 shadow-lg border border-base-200 p-6 flex flex-col justify-between">
-            <div>
-              <h3 className="text-xs uppercase tracking-wider font-bold text-base-content/60 mb-2">Total Solved</h3>
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-extrabold text-primary">{solvedCount}</span>
-                <span className="text-base-content/60 text-sm font-semibold">/ {totalQuestions}</span>
-              </div>
-            </div>
-            <div className="mt-4 space-y-1">
-              <div className="flex justify-between text-xs font-bold text-base-content/70">
-                <span>Progress</span>
-                <span>{percentage}%</span>
-              </div>
-              <progress className="progress progress-primary w-full" value={solvedCount} max={totalQuestions}></progress>
-            </div>
-          </div>
-
-          {/* Easy Stat Card */}
-          <div className="card bg-base-100 shadow-lg border border-base-200 p-6 space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="badge badge-success font-bold text-xs">Easy</span>
-              <span className="text-xs font-mono font-bold text-base-content/70">{easySolved} / {totalEasy}</span>
-            </div>
-            <div className="text-2xl font-bold text-success">{easySolved}</div>
-            <progress className="progress progress-success w-full" value={easySolved} max={totalEasy}></progress>
-          </div>
-
-          {/* Medium Stat Card */}
-          <div className="card bg-base-100 shadow-lg border border-base-200 p-6 space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="badge badge-warning font-bold text-xs">Medium</span>
-              <span className="text-xs font-mono font-bold text-base-content/70">{mediumSolved} / {totalMedium}</span>
-            </div>
-            <div className="text-2xl font-bold text-warning">{mediumSolved}</div>
-            <progress className="progress progress-warning w-full" value={mediumSolved} max={totalMedium}></progress>
-          </div>
-
-          {/* Hard Stat Card */}
-          <div className="card bg-base-100 shadow-lg border border-base-200 p-6 space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="badge badge-error font-bold text-xs">Hard</span>
-              <span className="text-xs font-mono font-bold text-base-content/70">{hardSolved} / {totalHard}</span>
-            </div>
-            <div className="text-2xl font-bold text-error">{hardSolved}</div>
-            <progress className="progress progress-error w-full" value={hardSolved} max={totalHard}></progress>
-          </div>
-        </div>
-
-        {/* Solved Problems List */}
-        <div className="card bg-base-100 shadow-xl border border-base-200 p-6 space-y-4">
-          <div className="flex justify-between items-center border-b border-base-200 pb-3">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <CheckCircle2 size={20} className="text-success" /> Solved Problems ({solvedCount})
+        {/* LeetCode Style Solved Problems Table */}
+        <div className="card bg-slate-900 border border-slate-800 p-6 space-y-4 shadow-xl">
+          <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+            <h2 className="text-lg font-bold flex items-center gap-2 text-white">
+              <CheckCircle2 size={18} className="text-emerald-400" /> Solved Problems ({solvedCount})
             </h2>
-            <NavLink to="/" className="btn btn-xs btn-ghost text-primary font-bold">
+            <NavLink to="/" className="btn btn-xs btn-ghost text-emerald-400 font-bold hover:bg-emerald-950/40">
               View All Problems →
             </NavLink>
           </div>
 
           {loading ? (
             <div className="flex justify-center p-8">
-              <span className="loading loading-spinner loading-md text-primary"></span>
+              <span className="loading loading-spinner loading-md text-emerald-400"></span>
             </div>
           ) : solvedProblems.length === 0 ? (
-            <div className="alert alert-info shadow-sm text-sm">
-              <span>You haven't solved any problems yet. Pick a problem from the <NavLink to="/" className="underline font-bold">Problems List</NavLink> to start practicing!</span>
+            <div className="alert bg-slate-950 border border-slate-800 text-slate-400 text-xs shadow-sm">
+              <span>You haven't solved any problems yet. Choose a problem from the <NavLink to="/" className="text-emerald-400 underline font-bold">Problems List</NavLink> to start practicing!</span>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="table table-zebra w-full text-sm">
+              <table className="table w-full text-xs text-slate-300">
                 <thead>
-                  <tr>
+                  <tr className="border-b border-slate-800 text-slate-400">
                     <th>#</th>
                     <th>Problem Title</th>
                     <th>Difficulty</th>
@@ -392,31 +413,31 @@ function Profile() {
                     <th>Action</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-800/60">
                   {solvedProblems.map((p, idx) => (
-                    <tr key={p._id}>
-                      <td className="font-mono text-xs">{idx + 1}</td>
+                    <tr key={p._id} className="hover:bg-slate-800/40 transition-colors">
+                      <td className="font-mono text-slate-500">{idx + 1}</td>
                       <td>
-                        <NavLink to={`/problem/${p._id}`} className="font-bold hover:text-primary transition-colors">
+                        <NavLink to={`/problem/${p._id}`} className="font-bold text-slate-100 hover:text-emerald-400 transition-colors">
                           {p.title}
                         </NavLink>
                       </td>
                       <td>
-                        <span className={`badge badge-sm font-bold uppercase ${
+                        <span className={`badge badge-sm font-bold uppercase text-[10px] ${
                           p.difficulty?.toLowerCase() === 'easy'
-                            ? 'badge-success'
+                            ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
                             : p.difficulty?.toLowerCase() === 'medium'
-                              ? 'badge-warning'
-                              : 'badge-error'
+                              ? 'bg-amber-950 text-amber-400 border border-amber-800'
+                              : 'bg-rose-950 text-rose-400 border border-rose-800'
                         }`}>
                           {p.difficulty}
                         </span>
                       </td>
                       <td>
-                        <span className="badge badge-neutral badge-sm font-mono">{p.tags}</span>
+                        <span className="badge bg-slate-950 text-slate-400 border border-slate-800 badge-sm font-mono text-[10px]">{p.tags}</span>
                       </td>
                       <td>
-                        <NavLink to={`/problem/${p._id}`} className="btn btn-xs btn-outline btn-primary gap-1">
+                        <NavLink to={`/problem/${p._id}`} className="btn btn-xs bg-slate-800 hover:bg-emerald-950 hover:text-emerald-400 text-slate-200 border border-slate-700 gap-1 rounded-lg font-bold">
                           <Code2 size={12} /> Solve
                         </NavLink>
                       </td>

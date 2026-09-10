@@ -552,18 +552,18 @@ const ProblemPage = () => {
             {/* Action Bar & Custom Language Popover & Practice Timer */}
             <div className="flex items-center gap-2">
               {/* Sleek Practice Timer Positioned Right Next to Language Selector */}
-              <div className="flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 px-2.5 py-1 rounded-lg text-emerald-400 font-mono text-xs shadow-inner">
+              <div className="flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 px-2.5 py-1 rounded-lg text-emerald-400 font-mono text-xs shadow-inner cursor-pointer select-none">
                 <button
                   onClick={() => setIsTimerRunning(!isTimerRunning)}
-                  className="hover:text-amber-400 transition-colors p-0.5"
+                  className="hover:text-amber-400 transition-colors p-0.5 cursor-pointer"
                   title={isTimerRunning ? "Pause Timer" : "Resume Timer"}
                 >
                   {isTimerRunning ? <Pause size={12} className="text-amber-400" /> : <Play size={12} className="text-emerald-400" />}
                 </button>
-                <span className="font-bold tracking-wider px-0.5">{formatTimer(timerSeconds)}</span>
+                <span onClick={() => setIsTimerRunning(!isTimerRunning)} className="font-bold tracking-wider px-0.5 cursor-pointer">{formatTimer(timerSeconds)}</span>
                 <button
                   onClick={handleResetTimer}
-                  className="hover:text-amber-400 transition-colors p-0.5"
+                  className="hover:text-amber-400 transition-colors p-0.5 cursor-pointer"
                   title="Reset Timer"
                 >
                   <RotateCcw size={12} className="text-slate-400 hover:text-slate-200" />

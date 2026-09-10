@@ -18,11 +18,22 @@ const solveDoubt = async (req, res) => {
       apiKey: process.env.GEMINI_KEY
     });
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.6-flash",
-      contents: messages || [],
-      config: {
-        systemInstruction: `
+    // Temporarily suppress internal SDK warning for thoughtSignature
+    const originalWarn = console.warn;
+    console.warn = function (...args) {
+      if (args[0] && typeof args[0] === "string" && args[0].includes("thoughtSignature")) {
+        return;
+      }
+      originalWarn.apply(console, args);
+    };
+
+    let response;
+    try {
+      response = await ai.models.generateContent({
+        model: "gemini-3.6-flash",
+        contents: messages || [],
+        config: {
+          systemInstruction: `
 You are an expert, friendly, and highly pedagogical Data Structures and Algorithms (DSA) Socratic Coach named CodeForge Tutor.
 Your goal is to help students learn and build problem-solving intuition for the specific problem they are currently viewing.
 
@@ -42,8 +53,11 @@ Your goal is to help students learn and build problem-solving intuition for the 
 4. **FORMATTING**: Use clean Markdown formatting with bold text, bullet points, and code snippets when appropriate.
 5. **STRICT DSA SCOPE**: Only answer questions regarding this current DSA problem. Politely decline non-DSA or unrelated topics.
 `
-      }
-    });
+        }
+      });
+    } finally {
+      console.warn = originalWarn; // Restore original console.warn
+    }
 
     return res.status(200).json({
       message: response.text
