@@ -8,18 +8,30 @@ const axiosClient = axios.create({
     }
 });
 
-// Fast In-Memory Cache for GET Requests (0ms Page Loading)
+// Fast In-Memory Cache for Static Public Data (Problem List)
 const getCache = new Map();
-const CACHE_TTL = 30000; // 30 seconds
+const CACHE_TTL = 15000; // 15 seconds
 
 export const clearApiCache = () => {
     getCache.clear();
 };
 
-// Request Interceptor: Return cached GET responses instantly
+// Endpoints that MUST NEVER be cached to prevent account data pollution when switching users
+const UNCACHED_ENDPOINTS = [
+    '/user/check',
+    '/problem/problemSolvedByUser',
+    '/problem/userStats',
+    '/user/profile',
+    '/submission'
+];
+
+// Request Interceptor: Return cached GET responses for static public endpoints only
 axiosClient.interceptors.request.use((config) => {
-    if (config.method?.toLowerCase() === 'get' && !config.headers?.['x-no-cache']) {
-        const cached = getCache.get(config.url);
+    const url = config.url || '';
+    const isUncached = UNCACHED_ENDPOINTS.some(path => url.includes(path));
+
+    if (config.method?.toLowerCase() === 'get' && !isUncached && !config.headers?.['x-no-cache']) {
+        const cached = getCache.get(url);
         if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
             config.adapter = () => Promise.resolve({
                 data: cached.data,
@@ -33,12 +45,15 @@ axiosClient.interceptors.request.use((config) => {
     return config;
 });
 
-// Response Interceptor: Cache GET results and invalidate cache on Mutations (POST, PUT, DELETE)
+// Response Interceptor: Cache GET results and invalidate cache on Mutations or Session Changes
 axiosClient.interceptors.response.use(
     (response) => {
+        const url = response.config.url || '';
         const method = response.config.method?.toLowerCase();
-        if (method === 'get' && response.config.url) {
-            getCache.set(response.config.url, {
+        const isUncached = UNCACHED_ENDPOINTS.some(path => url.includes(path));
+
+        if (method === 'get' && !isUncached) {
+            getCache.set(url, {
                 data: response.data,
                 timestamp: Date.now()
             });
@@ -47,7 +62,12 @@ axiosClient.interceptors.response.use(
         }
         return response;
     },
-    (error) => Promise.reject(error)
+    (error) => {
+        if (error.response?.status === 401) {
+            clearApiCache();
+        }
+        return Promise.reject(error);
+    }
 );
 
 export default axiosClient;

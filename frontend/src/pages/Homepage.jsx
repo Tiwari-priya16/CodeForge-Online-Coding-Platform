@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { NavLink, useNavigate } from 'react-router';
 import { useSelector } from 'react-redux';
 import axiosClient from '../utils/axiosClient';
@@ -20,15 +20,12 @@ function Homepage() {
   const [selectedStatus, setSelectedStatus] = useState('all');
 
   useEffect(() => {
-    const fetchData = async () => {
+    // 1. Instant Problem Fetch
+    const fetchAllProblems = async () => {
       try {
         setLoading(true);
-        const [probsRes, solvedRes] = await Promise.all([
-          axiosClient.get('/problem/getAllProblem'),
-          user ? axiosClient.get('/problem/problemSolvedByUser').catch(() => ({ data: [] })) : Promise.resolve({ data: [] })
-        ]);
-        setProblems(probsRes.data || []);
-        setSolvedProblems(solvedRes.data || []);
+        const { data } = await axiosClient.get('/problem/getAllProblem');
+        setProblems(data || []);
       } catch (error) {
         console.error('Error fetching problems:', error);
       } finally {
@@ -36,11 +33,35 @@ function Homepage() {
       }
     };
 
-    fetchData();
+    // 2. Parallel Background Solved User Sync
+    const fetchSolvedProblems = async () => {
+      if (!user) return;
+      try {
+        const { data } = await axiosClient.get('/problem/problemSolvedByUser');
+        setSolvedProblems(data || []);
+      } catch (error) {
+        console.error('Error fetching solved list:', error);
+      }
+    };
+
+    fetchAllProblems();
+    fetchSolvedProblems();
   }, [user]);
 
-  // Solved IDs Set
-  const solvedIds = new Set(solvedProblems.map(p => p?._id));
+  // Derived Solved IDs Set
+  const solvedIds = useMemo(() => {
+    const ids = new Set();
+    solvedProblems.forEach(p => {
+      if (p?._id) ids.add(String(p._id));
+    });
+    if (Array.isArray(user?.problemSolved)) {
+      user.problemSolved.forEach(p => {
+        const idStr = typeof p === 'object' ? p._id || p : String(p);
+        if (idStr) ids.add(String(idStr));
+      });
+    }
+    return ids;
+  }, [user, solvedProblems]);
 
   // Filter Logic
   const filteredProblems = problems.filter(problem => {
@@ -48,7 +69,7 @@ function Homepage() {
                        problem.tags?.toLowerCase().includes(searchQuery.toLowerCase());
     const difficultyMatch = selectedDifficulty === 'all' || problem.difficulty?.toLowerCase() === selectedDifficulty.toLowerCase();
     const tagMatch = selectedTag === 'all' || problem.tags?.toLowerCase() === selectedTag.toLowerCase();
-    const isSolved = solvedIds.has(problem._id);
+    const isSolved = solvedIds.has(String(problem._id));
     const statusMatch = selectedStatus === 'all' ||
                         (selectedStatus === 'solved' && isSolved) ||
                         (selectedStatus === 'unsolved' && !isSolved);
@@ -58,7 +79,7 @@ function Homepage() {
 
   // Handle Pick Random Unsolved Problem
   const handlePickRandom = () => {
-    const unsolved = problems.filter(p => !solvedIds.has(p._id));
+    const unsolved = problems.filter(p => !solvedIds.has(String(p._id)));
     const pool = unsolved.length > 0 ? unsolved : problems;
     if (pool.length > 0) {
       const randomProb = pool[Math.floor(Math.random() * pool.length)];
@@ -66,16 +87,18 @@ function Homepage() {
     }
   };
 
-  // Counts
+  // Mathematically Consistent Counts
   const totalCount = problems.length;
-  const solvedCount = solvedProblems.length;
+
   const easyCount = problems.filter(p => p.difficulty?.toLowerCase() === 'easy').length;
   const mediumCount = problems.filter(p => p.difficulty?.toLowerCase() === 'medium').length;
   const hardCount = problems.filter(p => p.difficulty?.toLowerCase() === 'hard').length;
 
-  const easySolved = solvedProblems.filter(p => p.difficulty?.toLowerCase() === 'easy').length;
-  const mediumSolved = solvedProblems.filter(p => p.difficulty?.toLowerCase() === 'medium').length;
-  const hardSolved = solvedProblems.filter(p => p.difficulty?.toLowerCase() === 'hard').length;
+  const easySolved = problems.filter(p => p.difficulty?.toLowerCase() === 'easy' && solvedIds.has(String(p._id))).length;
+  const mediumSolved = problems.filter(p => p.difficulty?.toLowerCase() === 'medium' && solvedIds.has(String(p._id))).length;
+  const hardSolved = problems.filter(p => p.difficulty?.toLowerCase() === 'hard' && solvedIds.has(String(p._id))).length;
+
+  const solvedCount = easySolved + mediumSolved + hardSolved;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 select-none">
@@ -285,7 +308,7 @@ function Homepage() {
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
                   {filteredProblems.map((problem, index) => {
-                    const isSolved = solvedIds.has(problem._id);
+                    const isSolved = solvedIds.has(String(problem._id));
 
                     return (
                       <tr key={problem._id} className="hover:bg-slate-800/40 transition-colors">

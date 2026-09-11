@@ -6,6 +6,8 @@ async function main() {
             serverSelectionTimeoutMS: 5000,
             connectTimeoutMS: 5000,
             socketTimeoutMS: 30000,
+            maxPoolSize: 50, // Keep warm pool of 50 connections for instant parallel queries
+            minPoolSize: 5,  // Keep 5 persistent open sockets to MongoDB Atlas
             tlsAllowInvalidCertificates: true,
             family: 4
         });
@@ -15,9 +17,8 @@ async function main() {
         try {
             const User = require('../models/user');
             await User.collection.dropIndex('problemSolved_1');
-            console.log("Dropped legacy problemSolved_1 index successfully.");
         } catch (e) {
-            // Index already dropped or doesn't exist - harmless
+            // Index already dropped or doesn't exist
         }
     } catch (err) {
         console.error("MongoDB Connection Error:", err.message);

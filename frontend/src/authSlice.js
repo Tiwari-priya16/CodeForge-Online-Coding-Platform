@@ -5,7 +5,9 @@ export const registerUser = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
+      clearApiCache();
       const response = await axiosClient.post('/user/register', userData);
+      clearApiCache();
       return response.data.user;
     } catch (error) {
       const errMsg = error.response?.data?.message || error.response?.data || error.message || 'Signup failed';
@@ -18,7 +20,9 @@ export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
+      clearApiCache();
       const response = await axiosClient.post('/user/login', credentials);
+      clearApiCache();
       return response.data.user;
     } catch (error) {
       const errMsg = error.response?.data?.message || error.response?.data || error.message || 'Invalid credentials';
@@ -48,8 +52,10 @@ export const logoutUser = createAsyncThunk(
     try {
       clearApiCache();
       await axiosClient.post('/user/logout');
+      clearApiCache();
       return null;
     } catch (error) {
+      clearApiCache();
       return rejectWithValue(error);
     }
   }
@@ -60,12 +66,14 @@ const authSlice = createSlice({
   initialState: {
     user: null,
     isAuthenticated: false,
-    loading: false,
+    loading: false,     // session check on page mount
+    submitting: false,  // form submission (login/signup)
     error: null
   },
   reducers: {
     clearError: (state) => {
       state.error = null;
+      state.submitting = false;
     },
     updateUserProfilePic: (state, action) => {
       if (state.user) {
@@ -77,17 +85,17 @@ const authSlice = createSlice({
     builder
       // Register User Cases
       .addCase(registerUser.pending, (state) => {
-        state.loading = true;
+        state.submitting = true;
         state.error = null;
       })
       .addCase(registerUser.fulfilled, (state, action) => {
-        state.loading = false;
+        state.submitting = false;
         state.isAuthenticated = !!action.payload;
         state.user = action.payload;
         state.error = null;
       })
       .addCase(registerUser.rejected, (state, action) => {
-        state.loading = false;
+        state.submitting = false;
         state.error = action.payload || 'Invalid credentials or user error';
         state.isAuthenticated = false;
         state.user = null;
@@ -95,17 +103,17 @@ const authSlice = createSlice({
 
       // Login User Cases
       .addCase(loginUser.pending, (state) => {
-        state.loading = true;
+        state.submitting = true;
         state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.loading = false;
+        state.submitting = false;
         state.isAuthenticated = !!action.payload;
         state.user = action.payload;
         state.error = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
-        state.loading = false;
+        state.submitting = false;
         state.error = action.payload || 'Invalid Credentials! Please check your email and password.';
         state.isAuthenticated = false;
         state.user = null;
@@ -128,21 +136,24 @@ const authSlice = createSlice({
         state.user = null;
       })
 
-      // Logout User Cases (Instant 0ms Logout Priority)
+      // Logout User Cases
       .addCase(logoutUser.pending, (state) => {
         state.loading = false;
+        state.submitting = false;
         state.user = null;
         state.isAuthenticated = false;
         state.error = null;
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.loading = false;
+        state.submitting = false;
         state.user = null;
         state.isAuthenticated = false;
         state.error = null;
       })
       .addCase(logoutUser.rejected, (state) => {
         state.loading = false;
+        state.submitting = false;
         state.user = null;
         state.isAuthenticated = false;
         state.error = null;

@@ -19,6 +19,7 @@ const userSchema = new Schema({
         trim: true,
         lowercase: true,
         immutable: true,
+        index: true
     },
     age: {
         type: Number,

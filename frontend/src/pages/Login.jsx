@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, NavLink } from 'react-router'; 
 import { loginUser, clearError } from "../authSlice";
-import { Mail, Lock, Eye, EyeOff, Flame, Code2, Cpu, CheckCircle2, ArrowRight, AlertCircle, Loader2, Sparkles, Video, Timer } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Flame, Code2, Cpu, CheckCircle2, ArrowRight, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 
 const loginSchema = z.object({
   emailId: z.string().email("Invalid email address"),
@@ -18,7 +18,7 @@ function Login() {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isAuthenticated, loading, error } = useSelector((state) => state.auth);
+  const { isAuthenticated, submitting, error } = useSelector((state) => state.auth);
 
   const {
     register,
@@ -115,14 +115,14 @@ function Login() {
           </div>
 
           {/* Alert Banners */}
-          {loading && (
+          {submitting && (
             <div className="alert bg-amber-950/80 border border-amber-800 text-amber-300 text-xs mb-4 p-3 rounded-xl flex items-center gap-2">
               <Loader2 size={16} className="animate-spin text-amber-400 shrink-0" />
               <span className="font-bold">Logging in... Please wait</span>
             </div>
           )}
 
-          {error && !loading && (
+          {error && !submitting && (
             <div className="alert bg-rose-950/90 border border-rose-800 text-rose-200 text-xs mb-4 p-3 rounded-xl flex items-center gap-2">
               <AlertCircle size={16} className="text-rose-400 shrink-0" />
               <span className="font-bold">{error}</span>
@@ -186,9 +186,9 @@ function Login() {
             <button
               type="submit"
               className="btn w-full bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 hover:from-amber-600 hover:to-red-700 text-white border-none font-bold text-sm shadow-lg shadow-amber-500/20 gap-2 mt-4 rounded-xl cursor-pointer"
-              disabled={loading}
+              disabled={submitting}
             >
-              {loading ? (
+              {submitting ? (
                 <>
                   <Loader2 size={16} className="animate-spin" /> Logging in...
                 </>

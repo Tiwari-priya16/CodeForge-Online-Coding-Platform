@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { NavLink } from 'react-router';
 import Navbar from '../components/Navbar';
@@ -51,7 +51,7 @@ function Profile() {
         setLoading(true);
         const [probsRes, solvedRes, statsRes] = await Promise.all([
           axiosClient.get('/problem/getAllProblem'),
-          axiosClient.get('/problem/problemSolvedByUser'),
+          axiosClient.get('/problem/problemSolvedByUser').catch(() => ({ data: [] })),
           axiosClient.get('/problem/userStats').catch(() => ({ data: { accuracy: 100, totalSubmissions: 0 } }))
         ]);
         setAllProblems(probsRes.data || []);
@@ -126,24 +126,35 @@ function Profile() {
     }
   };
 
+  // Solved List (0ms sync from Redux user state + background fetch)
+  const displaySolved = useMemo(() => {
+    if (solvedProblems.length > 0) return solvedProblems;
+    if (Array.isArray(user?.problemSolved) && allProblems.length > 0) {
+      const ids = new Set(user.problemSolved.map(p => String(typeof p === 'object' ? p._id || p : p)));
+      return allProblems.filter(p => ids.has(String(p._id)));
+    }
+    return [];
+  }, [solvedProblems, user, allProblems]);
+
   // Dynamic Counts based on actual DB problems
   const totalQuestions = allProblems.length;
-  const solvedCount = solvedProblems.length;
-
-  const easySolved = solvedProblems.filter((p) => p.difficulty?.toLowerCase() === 'easy').length;
-  const mediumSolved = solvedProblems.filter((p) => p.difficulty?.toLowerCase() === 'medium').length;
-  const hardSolved = solvedProblems.filter((p) => p.difficulty?.toLowerCase() === 'hard').length;
 
   const totalEasy = allProblems.filter((p) => p.difficulty?.toLowerCase() === 'easy').length;
   const totalMedium = allProblems.filter((p) => p.difficulty?.toLowerCase() === 'medium').length;
   const totalHard = allProblems.filter((p) => p.difficulty?.toLowerCase() === 'hard').length;
+
+  const easySolved = displaySolved.filter((p) => p.difficulty?.toLowerCase() === 'easy').length;
+  const mediumSolved = displaySolved.filter((p) => p.difficulty?.toLowerCase() === 'medium').length;
+  const hardSolved = displaySolved.filter((p) => p.difficulty?.toLowerCase() === 'hard').length;
+
+  const solvedCount = displaySolved.length || easySolved + mediumSolved + hardSolved;
 
   const initial = user?.firstName ? user.firstName.charAt(0).toUpperCase() : 'U';
   const fullName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'User';
   const userHandle = user?.username ? `@${user.username}` : `@${user?.emailId?.split('@')[0] || 'user'}`;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-slate-950 text-slate-100 select-none">
       <Navbar title="User Profile" />
 
       <div className="container mx-auto p-4 md:p-6 space-y-6 max-w-6xl">
@@ -248,18 +259,26 @@ function Profile() {
                 <span className="text-xs font-mono text-slate-400">Total: {totalQuestions}</span>
               </div>
 
-              <div className="py-4 flex items-baseline gap-3">
-                <span className="text-5xl font-black text-emerald-400 tracking-tight">{solvedCount}</span>
-                <span className="text-slate-400 text-base font-bold font-mono">/ {totalQuestions} Solved</span>
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs font-bold text-slate-400">
-                  <span>Overall Progress</span>
-                  <span className="text-emerald-400 font-mono">{totalQuestions > 0 ? Math.round((solvedCount / totalQuestions) * 100) : 0}%</span>
+              {loading ? (
+                <div className="py-6 flex justify-center text-emerald-400">
+                  <span className="loading loading-spinner loading-md"></span>
                 </div>
-                <progress className="progress progress-emerald w-full" value={solvedCount} max={totalQuestions || 1}></progress>
-              </div>
+              ) : (
+                <>
+                  <div className="py-4 flex items-baseline gap-3">
+                    <span className="text-5xl font-black text-emerald-400 tracking-tight">{solvedCount}</span>
+                    <span className="text-slate-400 text-base font-bold font-mono">/ {totalQuestions} Solved</span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs font-bold text-slate-400">
+                      <span>Overall Progress</span>
+                      <span className="text-emerald-400 font-mono">{totalQuestions > 0 ? Math.round((solvedCount / totalQuestions) * 100) : 0}%</span>
+                    </div>
+                    <progress className="progress progress-emerald w-full" value={solvedCount} max={totalQuestions || 1}></progress>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Easy Progress Card */}
@@ -393,11 +412,11 @@ function Profile() {
             </NavLink>
           </div>
 
-          {loading ? (
+          {loading && displaySolved.length === 0 ? (
             <div className="flex justify-center p-8">
               <span className="loading loading-spinner loading-md text-emerald-400"></span>
             </div>
-          ) : solvedProblems.length === 0 ? (
+          ) : displaySolved.length === 0 ? (
             <div className="alert bg-slate-950 border border-slate-800 text-slate-400 text-xs shadow-sm">
               <span>You haven't solved any problems yet. Choose a problem from the <NavLink to="/" className="text-emerald-400 underline font-bold">Problems List</NavLink> to start practicing!</span>
             </div>
@@ -414,7 +433,7 @@ function Profile() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
-                  {solvedProblems.map((p, idx) => (
+                  {displaySolved.map((p, idx) => (
                     <tr key={p._id} className="hover:bg-slate-800/40 transition-colors">
                       <td className="font-mono text-slate-500">{idx + 1}</td>
                       <td>

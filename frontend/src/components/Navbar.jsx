@@ -1,20 +1,43 @@
-import { NavLink } from 'react-router';
+import { useState, useEffect } from 'react';
+import { NavLink, useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { logoutUser } from '../authSlice';
-import { Flame, User, LogOut, ShieldAlert, Code2, ChevronRight, CheckCircle2, Trophy, Sparkles } from 'lucide-react';
+import { clearApiCache } from '../utils/axiosClient';
+import axiosClient from '../utils/axiosClient';
+import { Flame, User, LogOut, ShieldAlert, Code2, ChevronRight } from 'lucide-react';
 
 function Navbar({ title }) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
 
+  const [streakData, setStreakData] = useState({ streak: 0, solvedToday: false });
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchStreak = async () => {
+      try {
+        const { data } = await axiosClient.get('/problem/userStats');
+        setStreakData({
+          streak: data.streak || 0,
+          solvedToday: !!data.solvedToday
+        });
+      } catch (e) {
+        // Silently handle
+      }
+    };
+    fetchStreak();
+  }, [user]);
+
   const handleLogout = () => {
+    clearApiCache();
     dispatch(logoutUser());
+    navigate('/login');
   };
 
   const initial = user?.firstName ? user.firstName.charAt(0).toUpperCase() : 'U';
   const fullName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Developer';
   const userHandle = user?.username ? `@${user.username}` : `@${user?.emailId?.split('@')[0] || 'user'}`;
-  const solvedCount = user?.problemSolved?.length || 0;
 
   return (
     <nav className="navbar bg-slate-900 border-b border-slate-800 px-4 md:px-6 min-h-14 shadow-xl flex justify-between items-center z-[999] text-slate-100 select-none relative">
@@ -86,18 +109,26 @@ function Navbar({ title }) {
         </div>
       </div>
 
-      {/* Center: Real Daily Practice Streak & Solved Pill */}
-      <NavLink
-        to="/profile"
-        className="hidden lg:flex items-center gap-2 bg-slate-950 hover:bg-slate-800/80 px-3 py-1 rounded-xl border border-slate-800 text-xs shadow-inner cursor-pointer transition-colors"
-        title="View your daily solving streak and profile"
-      >
-        <Flame size={14} className="text-amber-400 animate-bounce shrink-0" />
-        <span className="font-bold text-slate-300 text-[11px]">Daily Streak</span>
-        <span className="badge bg-amber-500/10 text-amber-400 border-amber-800/60 badge-xs font-mono font-bold px-1.5">
-          {solvedCount > 0 ? `${solvedCount} Solved` : 'Active Goal'}
-        </span>
-      </NavLink>
+      {/* Center: Real Calendar Day Streak & Status Pill */}
+      {user && (
+        <NavLink
+          to="/profile"
+          className="hidden lg:flex items-center gap-2 bg-slate-950 hover:bg-slate-800/80 px-3 py-1 rounded-xl border border-slate-800 text-xs shadow-inner cursor-pointer transition-colors"
+          title="View your consecutive daily solving streak"
+        >
+          <Flame size={14} className={`shrink-0 ${streakData.solvedToday ? 'text-amber-400 animate-bounce' : 'text-slate-500'}`} />
+          <span className="font-bold text-slate-300 text-[11px]">
+            {streakData.streak > 0 ? `${streakData.streak} Day${streakData.streak > 1 ? 's' : ''} Streak` : 'Daily Goal'}
+          </span>
+          <span className={`badge badge-xs font-mono font-bold px-1.5 ${
+            streakData.solvedToday
+              ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
+              : 'bg-amber-950 text-amber-400 border border-amber-800'
+          }`}>
+            {streakData.solvedToday ? '✓ Solved Today' : 'Solve 1 Problem'}
+          </span>
+        </NavLink>
+      )}
 
       {/* Right: User Profile & Dropdown */}
       <div className="flex items-center gap-3">
