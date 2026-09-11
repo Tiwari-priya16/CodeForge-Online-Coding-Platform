@@ -27,74 +27,67 @@ const makeUserReply = (user) => ({
     profilePic: user.profilePic || ''
 });
 
-const register = async (req,res)=>{
-    
-    try{
-        // validate the data;
+const register = async (req, res) => {
+    try {
+        validate(req.body);
+        const { firstName, lastName, username, emailId, password } = req.body;
 
-      validate(req.body); 
-      const {firstName, lastName, username, emailId, password}  = req.body;
-
-      req.body.password = await bcrypt.hash(password, 10);
-      req.body.role = 'user';
-      if (!req.body.username && emailId) {
-        req.body.username = emailId.split('@')[0];
-      }
-    
-     const user =  await User.create(req.body);
-     const token =  jwt.sign({_id:user._id , emailId:emailId, role:'user'}, JWT_SECRET, {expiresIn: 60*60});
-
-     res.cookie('token', token, COOKIE_OPTIONS);
-     res.status(201).json({
-        user: makeUserReply(user),
-        message:"Logged in Successfully"
-    })
-    }
-    catch(err){
-        res.status(400).send("Error: "+err);
-    }
-}
-
-
-const login = async (req,res)=>{
-
-    try{
-        const {emailId, password} = req.body;
-
-        if(!emailId)
-            throw new Error("Invalid Credentials");
-        if(!password)
-            throw new Error("Invalid Credentials");
-
-        const user = await User.findOne({emailId});
-        if (!user) {
-            throw new Error("Invalid Credentials");
+        const existingUser = await User.findOne({ $or: [{ emailId }, { username }] });
+        if (existingUser) {
+            return res.status(400).json({ message: "User with this email or username already exists" });
         }
 
-        const match = await bcrypt.compare(password,user.password);
+        req.body.password = await bcrypt.hash(password, 10);
+        req.body.role = 'user';
+        if (!req.body.username && emailId) {
+            req.body.username = emailId.split('@')[0];
+        }
+    
+        const user = await User.create(req.body);
+        const token = jwt.sign({ _id: user._id, emailId: emailId, role: 'user' }, JWT_SECRET, { expiresIn: 60 * 60 });
 
-        if(!match)
-            throw new Error("Invalid Credentials");
-
-        const token =  jwt.sign({_id:user._id , emailId:emailId, role:user.role}, JWT_SECRET, {expiresIn: 60*60});
         res.cookie('token', token, COOKIE_OPTIONS);
         res.status(201).json({
             user: makeUserReply(user),
-            message:"Logged in Successfully"
-        })
+            message: "Registered and Logged in Successfully"
+        });
+    } catch (err) {
+        res.status(400).json({ message: err.message || "Registration failed" });
     }
-    catch(err){
-        res.status(401).send("Error: "+err);
+};
+
+const login = async (req, res) => {
+    try {
+        const { emailId, password } = req.body;
+
+        if (!emailId || !password) {
+            return res.status(401).json({ message: "Invalid Credentials" });
+        }
+
+        const user = await User.findOne({ emailId });
+        if (!user) {
+            return res.status(401).json({ message: "Invalid Credentials" });
+        }
+
+        const match = await bcrypt.compare(password, user.password);
+        if (!match) {
+            return res.status(401).json({ message: "Invalid Credentials" });
+        }
+
+        const token = jwt.sign({ _id: user._id, emailId: emailId, role: user.role }, JWT_SECRET, { expiresIn: 60 * 60 });
+        res.cookie('token', token, COOKIE_OPTIONS);
+        res.status(200).json({
+            user: makeUserReply(user),
+            message: "Logged in Successfully"
+        });
+    } catch (err) {
+        res.status(401).json({ message: err.message || "Invalid Credentials" });
     }
-}
+};
 
-
-// logOut feature
-
-const logout = async(req,res)=>{
-
-    try{
-        const {token} = req.cookies;
+const logout = async (req, res) => {
+    try {
+        const { token } = req.cookies;
         if (token) {
             const payload = jwt.decode(token);
             if (payload && payload.exp) {
@@ -104,54 +97,43 @@ const logout = async(req,res)=>{
         }
 
         res.cookie("token", null, { expires: new Date(0), path: '/' });
-        res.send("Logged Out Succesfully");
-
+        res.status(200).json({ message: "Logged Out Successfully" });
+    } catch (err) {
+        res.status(503).json({ message: "Logout error: " + err.message });
     }
-    catch(err){
-       res.status(503).send("Error: "+err);
+};
+
+const adminRegister = async (req, res) => {
+    try {
+        validate(req.body);
+        const { firstName, emailId, password } = req.body;
+
+        req.body.password = await bcrypt.hash(password, 10);
+        const user = await User.create(req.body);
+        const token = jwt.sign({ _id: user._id, emailId: emailId, role: user.role }, JWT_SECRET, { expiresIn: 60 * 60 });
+
+        res.cookie('token', token, COOKIE_OPTIONS);
+        res.status(201).json({ message: "User Registered Successfully" });
+    } catch (err) {
+        res.status(400).json({ message: err.message || "Admin registration failed" });
     }
-}
+};
 
-
-const adminRegister = async(req,res)=>{
-    try{
-      validate(req.body);
-      const {firstName, emailId, password}  = req.body;
-
-      req.body.password = await bcrypt.hash(password, 10);
-
-     const user =  await User.create(req.body);
-     const token =  jwt.sign({_id:user._id , emailId:emailId, role:user.role}, JWT_SECRET, {expiresIn: 60*60});
-     res.cookie('token', token, COOKIE_OPTIONS);
-     res.status(201).send("User Registered Successfully");
+const deleteProfile = async (req, res) => {
+    try {
+        const userId = req.result._id;
+        await User.findByIdAndDelete(userId);
+        res.status(200).json({ message: "Deleted Successfully" });
+    } catch (err) {
+        res.status(500).json({ message: "Internal Server Error" });
     }
-    catch(err){
-        res.status(400).send("Error: "+err);
-    }
-}
-
-const deleteProfile = async(req,res)=>{
-  
-    try{
-       const userId = req.result._id;
-      
-    await User.findByIdAndDelete(userId);
-
-    res.status(200).send("Deleted Successfully");
-
-    }
-    catch(err){
-      
-        res.status(500).send("Internal Server Error");
-    }
-}
-
+};
 
 const updateAvatar = async (req, res) => {
     try {
         const { profilePic } = req.body;
         if (!profilePic) {
-            return res.status(400).send("Profile picture URL is required");
+            return res.status(400).json({ message: "Profile picture URL is required" });
         }
 
         const user = req.result;
@@ -163,7 +145,7 @@ const updateAvatar = async (req, res) => {
             message: "Profile picture updated successfully"
         });
     } catch (err) {
-        res.status(500).send("Error updating avatar: " + err.message);
+        res.status(500).json({ message: "Error updating avatar: " + err.message });
     }
 };
 
@@ -190,8 +172,8 @@ const updateProfile = async (req, res) => {
             message: "Profile updated successfully"
         });
     } catch (err) {
-        res.status(500).send("Error updating profile: " + err.message);
+        res.status(500).json({ message: "Error updating profile: " + err.message });
     }
 };
 
-module.exports = {register, login, logout, adminRegister, deleteProfile, updateAvatar, updateProfile, makeUserReply};
+module.exports = { register, login, logout, adminRegister, deleteProfile, updateAvatar, updateProfile, makeUserReply };

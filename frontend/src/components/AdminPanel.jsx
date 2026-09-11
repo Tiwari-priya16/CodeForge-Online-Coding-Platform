@@ -2,9 +2,10 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import axiosClient from '../utils/axiosClient';
-import { useNavigate } from 'react-router';
+import { useNavigate, NavLink } from 'react-router';
+import Navbar from './Navbar';
+import { PlusCircle, ArrowLeft, Save, Code2, Trash2 } from 'lucide-react';
 
-// Zod schema matching the problem schema
 const problemSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
@@ -93,48 +94,51 @@ function AdminPanel() {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Create New Problem</h1>
-      
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Basic Information */}
-        <div className="card bg-base-100 shadow-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
-          <div className="space-y-4">
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Title</span>
-              </label>
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <Navbar title="Create Problem" />
+
+      <div className="container mx-auto p-4 md:p-6 space-y-6 max-w-5xl">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <NavLink to="/admin" className="btn btn-xs btn-ghost gap-1 text-slate-400 hover:text-white">
+            <ArrowLeft size={13} /> Back to Admin Panel
+          </NavLink>
+          <h1 className="text-xl font-bold flex items-center gap-2 text-emerald-400">
+            <PlusCircle size={20} /> Create New Problem
+          </h1>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 text-xs">
+          {/* Basic Information */}
+          <div className="card bg-slate-900 border border-slate-800 p-6 shadow-xl space-y-4">
+            <h2 className="text-sm font-bold text-slate-200 border-b border-slate-800 pb-2">Basic Information</h2>
+
+            <div className="form-control space-y-1">
+              <label className="label font-bold text-slate-300">Title</label>
               <input
                 {...register('title')}
-                className={`input input-bordered ${errors.title && 'input-error'}`}
+                placeholder="e.g. Two Sum"
+                className={`input input-sm bg-slate-950 border border-slate-800 text-slate-100 rounded-lg ${errors.title && 'input-error'}`}
               />
-              {errors.title && (
-                <span className="text-error">{errors.title.message}</span>
-              )}
+              {errors.title && <span className="text-rose-400">{errors.title.message}</span>}
             </div>
 
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Description</span>
-              </label>
+            <div className="form-control space-y-1">
+              <label className="label font-bold text-slate-300">Description (Markdown Supported)</label>
               <textarea
                 {...register('description')}
-                className={`textarea textarea-bordered h-32 ${errors.description && 'textarea-error'}`}
+                placeholder="Problem description..."
+                rows={6}
+                className={`textarea bg-slate-950 border border-slate-800 text-slate-100 font-mono text-xs rounded-lg ${errors.description && 'textarea-error'}`}
               />
-              {errors.description && (
-                <span className="text-error">{errors.description.message}</span>
-              )}
+              {errors.description && <span className="text-rose-400">{errors.description.message}</span>}
             </div>
 
-            <div className="flex gap-4">
-              <div className="form-control w-1/2">
-                <label className="label">
-                  <span className="label-text">Difficulty</span>
-                </label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="form-control space-y-1">
+                <label className="label font-bold text-slate-300">Difficulty</label>
                 <select
                   {...register('difficulty')}
-                  className={`select select-bordered ${errors.difficulty && 'select-error'}`}
+                  className="select select-sm bg-slate-950 border border-slate-800 text-slate-100 rounded-lg"
                 >
                   <option value="easy">Easy</option>
                   <option value="medium">Medium</option>
@@ -142,13 +146,11 @@ function AdminPanel() {
                 </select>
               </div>
 
-              <div className="form-control w-1/2">
-                <label className="label">
-                  <span className="label-text">Tag</span>
-                </label>
+              <div className="form-control space-y-1">
+                <label className="label font-bold text-slate-300">Tag / Category</label>
                 <select
                   {...register('tags')}
-                  className={`select select-bordered ${errors.tags && 'select-error'}`}
+                  className="select select-sm bg-slate-950 border border-slate-800 text-slate-100 rounded-lg"
                 >
                   <option value="array">Array</option>
                   <option value="linkedList">Linked List</option>
@@ -158,147 +160,139 @@ function AdminPanel() {
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Test Cases */}
-        <div className="card bg-base-100 shadow-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Test Cases</h2>
-          
-          {/* Visible Test Cases */}
-          <div className="space-y-4 mb-6">
-            <div className="flex justify-between items-center">
-              <h3 className="font-medium">Visible Test Cases</h3>
-              <button
-                type="button"
-                onClick={() => appendVisible({ input: '', output: '', explanation: '' })}
-                className="btn btn-sm btn-primary"
-              >
-                Add Visible Case
-              </button>
-            </div>
+          {/* Test Cases */}
+          <div className="card bg-slate-900 border border-slate-800 p-6 shadow-xl space-y-6">
+            <h2 className="text-sm font-bold text-slate-200 border-b border-slate-800 pb-2">Test Cases</h2>
             
-            {visibleFields.map((field, index) => (
-              <div key={field.id} className="border p-4 rounded-lg space-y-2">
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => removeVisible(index)}
-                    className="btn btn-xs btn-error"
-                  >
-                    Remove
-                  </button>
-                </div>
-                
-                <input
-                  {...register(`visibleTestCases.${index}.input`)}
-                  placeholder="Input"
-                  className="input input-bordered w-full"
-                />
-                
-                <input
-                  {...register(`visibleTestCases.${index}.output`)}
-                  placeholder="Output"
-                  className="input input-bordered w-full"
-                />
-                
-                <textarea
-                  {...register(`visibleTestCases.${index}.explanation`)}
-                  placeholder="Explanation"
-                  className="textarea textarea-bordered w-full"
-                />
+            {/* Visible Test Cases */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-emerald-400">Visible Example Cases</span>
+                <button
+                  type="button"
+                  onClick={() => appendVisible({ input: '', output: '', explanation: '' })}
+                  className="btn btn-xs btn-outline btn-success gap-1"
+                >
+                  <PlusCircle size={12} /> Add Case
+                </button>
               </div>
-            ))}
+
+              {visibleFields.map((field, index) => (
+                <div key={field.id} className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                  <div className="flex justify-between items-center text-slate-400 font-mono text-[11px]">
+                    <span>Case {index + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeVisible(index)}
+                      className="btn btn-xs btn-ghost text-rose-400"
+                    >
+                      <Trash2 size={12} /> Remove
+                    </button>
+                  </div>
+
+                  <input
+                    {...register(`visibleTestCases.${index}.input`)}
+                    placeholder="Input (e.g. nums = [2,7,11,15], target = 9)"
+                    className="input input-sm bg-slate-900 border border-slate-800 text-slate-100 font-mono w-full rounded-lg"
+                  />
+
+                  <input
+                    {...register(`visibleTestCases.${index}.output`)}
+                    placeholder="Expected Output (e.g. [0,1])"
+                    className="input input-sm bg-slate-900 border border-slate-800 text-slate-100 font-mono w-full rounded-lg"
+                  />
+
+                  <textarea
+                    {...register(`visibleTestCases.${index}.explanation`)}
+                    placeholder="Explanation"
+                    rows={2}
+                    className="textarea textarea-sm bg-slate-900 border border-slate-800 text-slate-100 w-full rounded-lg"
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Hidden Test Cases */}
+            <div className="space-y-3 pt-3 border-t border-slate-800">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-amber-400">Hidden Evaluation Cases</span>
+                <button
+                  type="button"
+                  onClick={() => appendHidden({ input: '', output: '' })}
+                  className="btn btn-xs btn-outline btn-warning gap-1"
+                >
+                  <PlusCircle size={12} /> Add Hidden Case
+                </button>
+              </div>
+
+              {hiddenFields.map((field, index) => (
+                <div key={field.id} className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                  <div className="flex justify-between items-center text-slate-400 font-mono text-[11px]">
+                    <span>Hidden Case {index + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeHidden(index)}
+                      className="btn btn-xs btn-ghost text-rose-400"
+                    >
+                      <Trash2 size={12} /> Remove
+                    </button>
+                  </div>
+
+                  <input
+                    {...register(`hiddenTestCases.${index}.input`)}
+                    placeholder="Input"
+                    className="input input-sm bg-slate-900 border border-slate-800 text-slate-100 font-mono w-full rounded-lg"
+                  />
+
+                  <input
+                    {...register(`hiddenTestCases.${index}.output`)}
+                    placeholder="Output"
+                    className="input input-sm bg-slate-900 border border-slate-800 text-slate-100 font-mono w-full rounded-lg"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Hidden Test Cases */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="font-medium">Hidden Test Cases</h3>
-              <button
-                type="button"
-                onClick={() => appendHidden({ input: '', output: '' })}
-                className="btn btn-sm btn-primary"
-              >
-                Add Hidden Case
-              </button>
-            </div>
-            
-            {hiddenFields.map((field, index) => (
-              <div key={field.id} className="border p-4 rounded-lg space-y-2">
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => removeHidden(index)}
-                    className="btn btn-xs btn-error"
-                  >
-                    Remove
-                  </button>
-                </div>
-                
-                <input
-                  {...register(`hiddenTestCases.${index}.input`)}
-                  placeholder="Input"
-                  className="input input-bordered w-full"
-                />
-                
-                <input
-                  {...register(`hiddenTestCases.${index}.output`)}
-                  placeholder="Output"
-                  className="input input-bordered w-full"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
+          {/* Code Templates */}
+          <div className="card bg-slate-900 border border-slate-800 p-6 shadow-xl space-y-6">
+            <h2 className="text-sm font-bold text-slate-200 border-b border-slate-800 pb-2">Code Templates</h2>
 
-        {/* Code Templates */}
-        <div className="card bg-base-100 shadow-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Code Templates</h2>
-          
-          <div className="space-y-6">
-            {[0, 1, 2, 3, 4].map((index) => {
-              const langs = ['C', 'C++', 'Java', 'JavaScript', 'Python'];
-              return (
-              <div key={index} className="space-y-2">
-                <h3 className="font-medium">
-                  {langs[index]}
-                </h3>
-                
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Initial Code</span>
-                  </label>
-                  <pre className="bg-base-300 p-4 rounded-lg">
+            <div className="space-y-6">
+              {['C', 'C++', 'Java', 'JavaScript', 'Python'].map((lang, index) => (
+                <div key={lang} className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                  <h3 className="font-bold text-emerald-400 flex items-center gap-1.5">
+                    <Code2 size={14} /> {lang} Templates
+                  </h3>
+
+                  <div className="form-control space-y-1">
+                    <label className="label text-slate-400 font-semibold">Starter Code</label>
                     <textarea
                       {...register(`startCode.${index}.initialCode`)}
-                      className="w-full bg-transparent font-mono"
-                      rows={6}
+                      rows={4}
+                      className="textarea bg-slate-900 border border-slate-800 text-slate-100 font-mono text-xs w-full rounded-lg"
                     />
-                  </pre>
-                </div>
-                
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Reference Solution</span>
-                  </label>
-                  <pre className="bg-base-300 p-4 rounded-lg">
+                  </div>
+
+                  <div className="form-control space-y-1">
+                    <label className="label text-slate-400 font-semibold">Reference Solution</label>
                     <textarea
                       {...register(`referenceSolution.${index}.completeCode`)}
-                      className="w-full bg-transparent font-mono"
                       rows={6}
+                      className="textarea bg-slate-900 border border-slate-800 text-slate-100 font-mono text-xs w-full rounded-lg"
                     />
-                  </pre>
+                  </div>
                 </div>
-              </div>
-            );
-            })}
+              ))}
+            </div>
           </div>
-        </div>
 
-        <button type="submit" className="btn btn-primary w-full">
-          Create Problem
-        </button>
-      </form>
+          <button type="submit" className="btn btn-emerald bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold w-full gap-2 shadow-lg">
+            <Save size={16} /> Save New Problem
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

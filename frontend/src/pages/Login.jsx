@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, NavLink } from 'react-router'; 
 import { loginUser, clearError } from "../authSlice";
-import { Mail, Lock, Eye, EyeOff, Flame, Code2, Cpu, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Flame, Code2, Cpu, CheckCircle2, ArrowRight, AlertCircle, Loader2, Sparkles, Video, Timer } from 'lucide-react';
 
 const loginSchema = z.object({
   emailId: z.string().email("Invalid email address"),
@@ -14,6 +14,8 @@ const loginSchema = z.object({
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isAuthenticated, loading, error } = useSelector((state) => state.auth);
@@ -26,12 +28,21 @@ function Login() {
 
   useEffect(() => {
     dispatch(clearError());
+  }, [dispatch]);
+
+  useEffect(() => {
     if (isAuthenticated) {
-      navigate('/');
+      setLoginSuccess(true);
+      const timer = setTimeout(() => {
+        navigate('/');
+      }, 500);
+      return () => clearTimeout(timer);
     }
-  }, [isAuthenticated, navigate, dispatch]);
+  }, [isAuthenticated, navigate]);
 
   const onSubmit = (data) => {
+    dispatch(clearError());
+    setLoginSuccess(false);
     dispatch(loginUser(data));
   };
 
@@ -61,22 +72,22 @@ function Login() {
               Forge Your DSA & Coding Skills.
             </h1>
             <p className="text-slate-400 text-sm leading-relaxed mb-8">
-              Practice 100+ curated problems, execute code in 5 programming languages, and get instant guidance from our AI Tutor.
+              Practice handpicked DSA problems across Easy, Medium, and Hard difficulty levels. Run code across 5 programming languages, watch video editorials, and get AI-powered doubt assistance.
             </p>
 
             {/* Feature Badges */}
             <div className="space-y-4 text-xs font-semibold text-slate-300">
               <div className="flex items-center gap-3 bg-slate-800/40 p-3 rounded-xl border border-slate-800">
-                <Code2 className="text-amber-400" size={18} />
-                <span>Multi-Language IDE (C, C++, Java, JS, Python 3)</span>
+                <Code2 className="text-amber-400 shrink-0" size={18} />
+                <span>Curated DSA Problems (Arrays, Linked Lists, Graphs, DP)</span>
               </div>
               <div className="flex items-center gap-3 bg-slate-800/40 p-3 rounded-xl border border-slate-800">
-                <Cpu className="text-purple-400" size={18} />
-                <span>AI-Powered DSA Doubt Solving & Code Reviews</span>
+                <Cpu className="text-purple-400 shrink-0" size={18} />
+                <span>5 Languages IDE (C, C++, Java, JS, Python 3) with Judge0</span>
               </div>
               <div className="flex items-center gap-3 bg-slate-800/40 p-3 rounded-xl border border-slate-800">
-                <CheckCircle2 className="text-emerald-400" size={18} />
-                <span>Fast Sandboxed Code Execution via Judge0</span>
+                <Sparkles className="text-emerald-400 shrink-0" size={18} />
+                <span>AI Doubt Solver, Video Editorials & Practice Analytics</span>
               </div>
             </div>
           </div>
@@ -103,9 +114,25 @@ function Login() {
             <p className="text-slate-400 text-xs">Sign in to continue solving coding challenges</p>
           </div>
 
-          {error && (
-            <div className="alert alert-error text-xs mb-4 p-3 bg-red-950/80 border border-red-800 text-red-200 rounded-xl">
-              <span>{error}</span>
+          {/* Alert Banners */}
+          {loading && (
+            <div className="alert bg-amber-950/80 border border-amber-800 text-amber-300 text-xs mb-4 p-3 rounded-xl flex items-center gap-2">
+              <Loader2 size={16} className="animate-spin text-amber-400 shrink-0" />
+              <span className="font-bold">Logging in... Please wait</span>
+            </div>
+          )}
+
+          {error && !loading && (
+            <div className="alert bg-rose-950/90 border border-rose-800 text-rose-200 text-xs mb-4 p-3 rounded-xl flex items-center gap-2">
+              <AlertCircle size={16} className="text-rose-400 shrink-0" />
+              <span className="font-bold">{error}</span>
+            </div>
+          )}
+
+          {loginSuccess && (
+            <div className="alert bg-emerald-950/90 border border-emerald-800 text-emerald-200 text-xs mb-4 p-3 rounded-xl flex items-center gap-2">
+              <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
+              <span className="font-bold">Successfully Logged In! Redirecting...</span>
             </div>
           )}
 
@@ -158,10 +185,16 @@ function Login() {
             {/* Submit Button */}
             <button
               type="submit"
-              className={`btn w-full bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 hover:from-amber-600 hover:to-red-700 text-white border-none font-bold text-sm shadow-lg shadow-amber-500/20 gap-2 mt-4 rounded-xl ${loading ? 'loading' : ''}`}
+              className="btn w-full bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 hover:from-amber-600 hover:to-red-700 text-white border-none font-bold text-sm shadow-lg shadow-amber-500/20 gap-2 mt-4 rounded-xl cursor-pointer"
               disabled={loading}
             >
-              {loading ? 'Logging in...' : <>Login <ArrowRight size={16} /></>}
+              {loading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" /> Logging in...
+                </>
+              ) : (
+                <>Login <ArrowRight size={16} /></>
+              )}
             </button>
           </form>
 

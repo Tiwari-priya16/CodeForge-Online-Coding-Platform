@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, NavLink } from 'react-router';
 import { registerUser, clearError } from '../authSlice';
-import { Mail, Lock, User, AtSign, Eye, EyeOff, Flame, Code2, Cpu, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User, AtSign, Eye, EyeOff, Flame, Code2, Cpu, CheckCircle2, ArrowRight, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 
 const signupSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -17,6 +17,8 @@ const signupSchema = z.object({
 
 function Signup() {
   const [showPassword, setShowPassword] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState(false);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isAuthenticated, loading, error } = useSelector((state) => state.auth);
@@ -29,12 +31,21 @@ function Signup() {
 
   useEffect(() => {
     dispatch(clearError());
+  }, [dispatch]);
+
+  useEffect(() => {
     if (isAuthenticated) {
-      navigate('/');
+      setSignupSuccess(true);
+      const timer = setTimeout(() => {
+        navigate('/');
+      }, 500);
+      return () => clearTimeout(timer);
     }
-  }, [isAuthenticated, navigate, dispatch]);
+  }, [isAuthenticated, navigate]);
 
   const onSubmit = (data) => {
+    dispatch(clearError());
+    setSignupSuccess(false);
     dispatch(registerUser(data));
   };
 
@@ -64,22 +75,22 @@ function Signup() {
               Join the CodeForge Developer Network.
             </h1>
             <p className="text-slate-400 text-sm leading-relaxed mb-8">
-              Create your account to solve problems, track submission history, climb rankings, and get instant AI assistance.
+              Create your account to solve handcrafted DSA problems, track submission history, climb rankings, and get instant AI assistance.
             </p>
 
             {/* Feature Badges */}
             <div className="space-y-4 text-xs font-semibold text-slate-300">
               <div className="flex items-center gap-3 bg-slate-800/40 p-3 rounded-xl border border-slate-800">
-                <Code2 className="text-amber-400" size={18} />
-                <span>Practice 100+ Handcrafted DSA Problems</span>
+                <Code2 className="text-amber-400 shrink-0" size={18} />
+                <span>Curated DSA Problems (Arrays, Linked Lists, Graphs, DP)</span>
               </div>
               <div className="flex items-center gap-3 bg-slate-800/40 p-3 rounded-xl border border-slate-800">
-                <Cpu className="text-purple-400" size={18} />
-                <span>AI Tutor for Debugging & Hints</span>
+                <Cpu className="text-purple-400 shrink-0" size={18} />
+                <span>5 Languages IDE (C, C++, Java, JS, Python 3) with Judge0</span>
               </div>
               <div className="flex items-center gap-3 bg-slate-800/40 p-3 rounded-xl border border-slate-800">
-                <CheckCircle2 className="text-emerald-400" size={18} />
-                <span>5 Programming Languages (C, C++, Java, JS, Python 3)</span>
+                <Sparkles className="text-emerald-400 shrink-0" size={18} />
+                <span>AI Doubt Solver, Video Editorials & Practice Analytics</span>
               </div>
             </div>
           </div>
@@ -106,9 +117,25 @@ function Signup() {
             <p className="text-slate-400 text-xs">Enter your details to register as a developer</p>
           </div>
 
-          {error && (
-            <div className="alert alert-error text-xs mb-4 p-3 bg-red-950/80 border border-red-800 text-red-200 rounded-xl">
-              <span>{error}</span>
+          {/* Alert Banners */}
+          {loading && (
+            <div className="alert bg-amber-950/80 border border-amber-800 text-amber-300 text-xs mb-4 p-3 rounded-xl flex items-center gap-2">
+              <Loader2 size={16} className="animate-spin text-amber-400 shrink-0" />
+              <span className="font-bold">Creating your account... Please wait</span>
+            </div>
+          )}
+
+          {error && !loading && (
+            <div className="alert bg-rose-950/90 border border-rose-800 text-rose-200 text-xs mb-4 p-3 rounded-xl flex items-center gap-2">
+              <AlertCircle size={16} className="text-rose-400 shrink-0" />
+              <span className="font-bold">{error}</span>
+            </div>
+          )}
+
+          {signupSuccess && (
+            <div className="alert bg-emerald-950/90 border border-emerald-800 text-emerald-200 text-xs mb-4 p-3 rounded-xl flex items-center gap-2">
+              <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
+              <span className="font-bold">Successfully Registered! Redirecting...</span>
             </div>
           )}
 
@@ -211,10 +238,16 @@ function Signup() {
             {/* Submit Button */}
             <button
               type="submit"
-              className={`btn w-full bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 hover:from-amber-600 hover:to-red-700 text-white border-none font-bold text-xs shadow-lg shadow-amber-500/20 gap-2 mt-4 rounded-xl ${loading ? 'loading' : ''}`}
+              className="btn w-full bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 hover:from-amber-600 hover:to-red-700 text-white border-none font-bold text-xs shadow-lg shadow-amber-500/20 gap-2 mt-4 rounded-xl cursor-pointer"
               disabled={loading}
             >
-              {loading ? 'Registering Account...' : <>Sign Up <ArrowRight size={15} /></>}
+              {loading ? (
+                <>
+                  <Loader2 size={15} className="animate-spin" /> Registering Account...
+                </>
+              ) : (
+                <>Sign Up <ArrowRight size={15} /></>
+              )}
             </button>
           </form>
 

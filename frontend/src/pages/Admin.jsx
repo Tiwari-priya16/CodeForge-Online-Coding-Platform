@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Home, RefreshCw, Zap,Video } from 'lucide-react';
+import React from 'react';
+import { Plus, Edit, Trash2, Video } from 'lucide-react';
 import { NavLink } from 'react-router';
+import Navbar from '../components/Navbar';
 
 function Admin() {
-  const [selectedOption, setSelectedOption] = useState(null);
-
   const adminOptions = [
     {
       id: 'create',
@@ -12,7 +11,7 @@ function Admin() {
       description: 'Add a new coding problem to the platform',
       icon: Plus,
       color: 'btn-success',
-      bgColor: 'bg-success/10',
+      bgColor: 'bg-emerald-500/10 text-emerald-400',
       route: '/admin/create'
     },
     {
@@ -21,7 +20,7 @@ function Admin() {
       description: 'Edit existing problems and their details',
       icon: Edit,
       color: 'btn-warning',
-      bgColor: 'bg-warning/10',
+      bgColor: 'bg-amber-500/10 text-amber-400',
       route: '/admin/update'
     },
     {
@@ -30,75 +29,70 @@ function Admin() {
       description: 'Remove problems from the platform',
       icon: Trash2,
       color: 'btn-error',
-      bgColor: 'bg-error/10',
+      bgColor: 'bg-rose-500/10 text-rose-400',
       route: '/admin/delete'
     },
     {
       id: 'video',
-      title: 'Video Problem',
-      description: 'Upload And Delete Videos',
+      title: 'Video Solutions',
+      description: 'Attach YouTube video editorials or Cloudinary MP4s',
       icon: Video,
-      color: 'btn-success',
-      bgColor: 'bg-success/10',
+      color: 'btn-info',
+      bgColor: 'bg-sky-500/10 text-sky-400',
       route: '/admin/video'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-base-200">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <Navbar title="Admin Dashboard" />
+
+      <div className="container mx-auto px-4 py-10 max-w-6xl space-y-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-base-content mb-4">
-            Admin Panel
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-black text-white tracking-tight">
+            CodeForge Admin Panel
           </h1>
-          <p className="text-base-content/70 text-lg">
-            Manage coding problems on your platform
+          <p className="text-slate-400 text-sm max-w-md mx-auto">
+            Manage coding problems, update templates, testcases, and video editorials
           </p>
         </div>
 
         {/* Admin Options Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {adminOptions.map((option) => {
             const IconComponent = option.icon;
             return (
               <div
                 key={option.id}
-                className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer"
+                className="card bg-slate-900 border border-slate-800 shadow-xl hover:border-slate-700 transition-all duration-300 transform hover:-translate-y-1"
               >
-                <div className="card-body items-center text-center p-8">
-                  {/* Icon */}
-                  <div className={`${option.bgColor} p-4 rounded-full mb-4`}>
-                    <IconComponent size={32} className="text-base-content" />
+                <div className="card-body items-center text-center p-6 space-y-3">
+                  <div className={`${option.bgColor} p-4 rounded-2xl shadow-inner`}>
+                    <IconComponent size={28} />
                   </div>
                   
-                  {/* Title */}
-                  <h2 className="card-title text-xl mb-2">
+                  <h2 className="card-title text-base font-bold text-white">
                     {option.title}
                   </h2>
                   
-                  {/* Description */}
-                  <p className="text-base-content/70 mb-6">
+                  <p className="text-slate-400 text-xs leading-relaxed min-h-[36px]">
                     {option.description}
                   </p>
                   
-                  {/* Action Button */}
-                  <div className="card-actions">
-                    <div className="card-actions">
+                  <div className="card-actions w-full pt-2">
                     <NavLink 
-                    to={option.route}
-                   className={`btn ${option.color} btn-wide`}
-                   >
-                   {option.title}
-                   </NavLink>
-                   </div>
+                      to={option.route}
+                      className={`btn ${option.color} btn-sm w-full font-bold rounded-xl shadow-md`}
+                    >
+                      {option.title}
+                    </NavLink>
                   </div>
                 </div>
               </div>
             );
           })}
         </div>
-
       </div>
     </div>
   );

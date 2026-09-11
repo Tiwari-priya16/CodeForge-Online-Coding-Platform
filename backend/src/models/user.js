@@ -1,80 +1,75 @@
 const mongoose = require('mongoose');
-const {Schema} = mongoose;
+const { Schema } = mongoose;
 
 const userSchema = new Schema({
-    firstName:{
+    firstName: {
         type: String,
         required: true,
-        minLength:3,
-        maxLength:20
+        minLength: 2,
+        maxLength: 30
     },
-    lastName:{
-        type:String,
-        minLength:3,
-        maxLength:20,
+    lastName: {
+        type: String,
+        default: ''
     },
-    emailId:{
-        type:String,
-        required:true,
-        unique:true,
+    emailId: {
+        type: String,
+        required: true,
+        unique: true,
         trim: true,
-        lowercase:true,
+        lowercase: true,
         immutable: true,
     },
-    age:{
-        type:Number,
-        min:6,
-        max:80,
+    age: {
+        type: Number,
+        min: 6,
+        max: 80,
     },
-    role:{
-        type:String,
-        enum:['user','admin'],
+    role: {
+        type: String,
+        enum: ['user', 'admin'],
         default: 'user'
     },
-    username:{
+    username: {
         type: String,
         trim: true,
         lowercase: true,
         default: ''
     },
-    bio:{
+    bio: {
         type: String,
         default: 'DSA Enthusiast & Developer'
     },
-    githubUrl:{
+    githubUrl: {
         type: String,
         default: ''
     },
-    linkedinUrl:{
+    linkedinUrl: {
         type: String,
         default: ''
     },
-    profilePic:{
+    profilePic: {
         type: String,
         default: ''
     },
-    problemSolved:{
-        type:[{
-            type:Schema.Types.ObjectId,
-            ref:'problem',
-            unique:true
-        }],
-    },
-    password:{
-        type:String,
+    problemSolved: [{
+        type: Schema.Types.ObjectId,
+        ref: 'problem'
+    }],
+    password: {
+        type: String,
         required: true
     }
-},{
-    timestamps:true
+}, {
+    timestamps: true
 });
 
 userSchema.post('findOneAndDelete', async function (userInfo) {
     if (userInfo) {
-      await mongoose.model('submission').deleteMany({ userId: userInfo._id });
+        await mongoose.model('submission').deleteMany({ userId: userInfo._id });
     }
 });
 
-
-const User = mongoose.model("user",userSchema);
+const User = mongoose.model("user", userSchema);
 
 module.exports = User;
