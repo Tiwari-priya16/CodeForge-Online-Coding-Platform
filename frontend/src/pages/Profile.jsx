@@ -12,7 +12,7 @@ function Profile() {
 
   const [allProblems, setAllProblems] = useState([]);
   const [solvedProblems, setSolvedProblems] = useState([]);
-  const [userStats, setUserStats] = useState({ totalSubmissions: 0, acceptedSubmissions: 0, accuracy: 100 });
+  const [userStats, setUserStats] = useState({ totalSubmissions: 0, acceptedSubmissions: 0, accuracy: 0 });
   const [loading, setLoading] = useState(true);
   const [uploadingImg, setUploadingImg] = useState(false);
 
@@ -52,11 +52,11 @@ function Profile() {
         const [probsRes, solvedRes, statsRes] = await Promise.all([
           axiosClient.get('/problem/getAllProblem'),
           axiosClient.get('/problem/problemSolvedByUser').catch(() => ({ data: [] })),
-          axiosClient.get('/problem/userStats').catch(() => ({ data: { accuracy: 100, totalSubmissions: 0 } }))
+          axiosClient.get('/problem/userStats').catch(() => ({ data: { accuracy: 0, totalSubmissions: 0, acceptedSubmissions: 0 } }))
         ]);
         setAllProblems(probsRes.data || []);
         setSolvedProblems(solvedRes.data || []);
-        setUserStats(statsRes.data || { accuracy: 100, totalSubmissions: 0 });
+        setUserStats(statsRes.data || { accuracy: 0, totalSubmissions: 0, acceptedSubmissions: 0 });
       } catch (err) {
         console.error('Error fetching profile stats:', err);
       } finally {
@@ -217,14 +217,18 @@ function Profile() {
                 <Mail size={13} className="text-slate-500" />
                 <span className="truncate">{user?.emailId}</span>
               </div>
-              <div className="flex items-center gap-4 pt-1">
+              <div className="flex flex-wrap items-center gap-3 pt-1">
                 <div className="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 font-mono text-xs">
                   <CheckCircle2 size={13} className="text-emerald-400" />
                   <span className="text-slate-200 font-bold">{solvedCount} Solved</span>
                 </div>
-                <div className="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 font-mono text-xs">
+                <div
+                  className="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 font-mono text-xs"
+                  title={`Accepted Submissions: ${userStats.acceptedSubmissions} / Total Attempts: ${userStats.totalSubmissions}`}
+                >
                   <Activity size={13} className="text-amber-400" />
                   <span className="text-slate-200 font-bold">{userStats.accuracy}% Accuracy</span>
+                  <span className="text-slate-500 text-[10px]">({userStats.acceptedSubmissions}/{userStats.totalSubmissions})</span>
                 </div>
               </div>
             </div>

@@ -1,67 +1,68 @@
-# ⚡ CodeForge — Online Coding Platform
+# ⚡ CodeForge — Full-Stack DSA & Code Assessment Platform
 
-CodeForge is a full-stack online coding platform inspired by **LeetCode**, built for practicing programming problems, submitting solutions, and tracking coding progress.
-
-It also provides an **admin dashboard** for managing problems, users, test cases, and platform notices.
-
-> 🚀 A real-world full-stack project exploring authentication, REST APIs, database management, role-based access control, AI integration, and code execution using a self-hosted Judge0-based evaluation system.
+**CodeForge** is an advanced, high-performance online coding and Data Structures & Algorithms (DSA) assessment platform. Built with a modern full-stack architecture using **React 19, Tailwind CSS, Node.js, Express, MongoDB Atlas, and Redis**, CodeForge enables developers to practice curated problems, execute code across 5 programming languages via a self-hosted Judge0 sandbox, watch video solution editorials, track consecutive day solving streaks, and receive live AI-powered code debugging and complexity analysis.
 
 ---
 
 ## ✨ Features
 
-### 👨‍💻 User Features
+### 🔐 User & Authentication Features
+- 🔐 **Secure Registration & Login**: User authentication powered by **Bcrypt** password hashing and **JWT HttpOnly cookies**.
+- 👤 **Profile Management**: Profile customization (Avatar photo upload, bio/headline, social links, password updates).
+- 📚 **Interactive Problem Browsing**: Search problems by title or category in real-time with custom dark popover dropdowns.
+- 🎯 **Multi-Criterion Filters**: Filter problem sets by difficulty (Easy, Medium, Hard), tags (Arrays, Linked Lists, Graphs, DP), and status (Solved/Unsolved).
+- 💻 **Multi-Language Online IDE**: Built-in code editor supporting **C, C++, Java, JavaScript, and Python 3**.
+- ⏱️ **Practice Stopwatch**: Integrated timer with start, pause, and reset controls for speed-coding sessions.
+- 📊 **Submission History & Analytics**: View submission results, runtime (ms), memory usage (kB), and acceptance accuracy percentages.
+- 🔥 **Daily Streak Tracker**: Real calendar-day consecutive day solving streak algorithm.
+- 🎲 **Pick Random Problem**: One-click random unsolved problem selector.
 
-- 🔐 User registration and login
-- 👤 Profile management
-- 📚 Browse coding problems
-- 🔎 Filter problems by difficulty/category
-- 💻 Monaco-based online code editor
-- ▶️ Submit solutions in multiple programming languages
-- 📊 View submission results and history
-- 🧠 Practice and improve problem-solving skills
-- 📢 View platform announcements and notices
-
-### 🤖 AI-Powered DSA Assistant
-
-- 🧠 Integrated **Google Gemini AI** for context-aware DSA assistance
-- 💡 Get hints, approach suggestions, code reviews, and debugging help
-- 🚀 Provides optimized solutions with **time and space complexity**
-- 🧪 Helps generate test cases and edge cases
-- 🎯 Uses the current problem's description, examples, and starter code for contextual responses
+### 🤖 AI-Powered DSA Assistant (ChatAI)
+- 🧠 **Integrated Google Gemini AI**: Context-aware DSA assistance powered by `@google/genai`.
+- 💡 **Hints & Guidance**: Get step-by-step approach suggestions, code reviews, and debugging help without revealing full spoilers.
+- 🚀 **Complexity Analysis**: Provides optimized solutions with **time and space complexity** ($O(N)$).
+- 🧪 **Edge Case Generation**: Identifies edge cases and potential runtime errors.
+- 🎯 **Contextual AI**: Reads active problem statements, constraints, example testcases, and user code for tailormade responses.
 
 ### 🧩 Problem System
+- 📚 **Handcrafted Problem Set**: Detailed problem statements, constraints, and example testcases.
+- 🟢 **Easy** | 🟡 **Medium** | 🔴 **Hard** difficulty levels.
+- 📝 **Multi-Language Templates**: Pre-configured starter code templates (`// Write your solution here`) and reference solutions across 5 languages.
+- 🧪 **Rigorous Testcases**: 3 visible example testcases with explanations + 11 hidden evaluation testcases per problem.
 
-- LeetCode-style coding problems
-- Detailed problem statements, constraints, and examples
-- 🟢 Easy | 🟡 Medium | 🔴 Hard difficulty levels
-- Multi-language code submissions
-- Visible and hidden test cases
-- Test-case based evaluation
-- Submission tracking and verdict generation
+### 🎬 Video Solution System
+- 🎥 **Dual-Source Video Editorials**: Integrated video solutions supporting both **YouTube iFrame players** (with responsive 16:9 aspect ratio) and **Cloudinary MP4s** directly inside the Editorial tab.
 
 ### ⚙️ Code Execution & Evaluation
-
-- 🧠 Self-hosted **Judge0-based** code execution
-- 🐳 Docker-based isolated execution environment
-- ⏱️ Time and memory limit enforcement
-- 🔒 Sandboxed execution for submitted code
-- 📥 Input/output handling for test cases
-- 📊 Automatic verdicts such as:
-  - Accepted
-  - Wrong Answer
-  - Time Limit Exceeded
-  - Runtime Error
-- 🔁 Queue-based submission processing
+- 🧠 **Self-Hosted Judge0 Engine**: Code execution sandbox with time and memory limit enforcement.
+- ⏱️ **Fast Mongoose `.lean()` & Redis**: High-speed database queries and non-blocking token blocklist verification.
+- 📊 **Automatic Verdict Generation**:
+  - 🟢 **Accepted**
+  - 🔴 **Wrong Answer**
+  - 🟡 **Time Limit Exceeded**
+  - ⚠️ **Runtime Error / Compile Error**
 
 ### 🛠️ Admin Dashboard
+- 📋 **Complete Problem Management**: Zod-validated administrative portal to create, edit, and delete problems.
+- 🧪 **Test Case Editor**: Configure 3 visible example cases with explanations and 11 hidden evaluation cases.
+- 🎥 **Video Solution Publishing**: Attach YouTube URLs or upload local MP4 video editorials to Cloudinary.
+- 🔐 **Protected Authorization**: Secured with role-based access control (`adminMiddleware`).
 
-- 📋 Create, update, and delete coding problems
-- 🧪 Manage problem test cases
-- 📢 Create and manage platform notices
-- 👥 Manage users
-- 📊 Monitor submissions and platform activity
-- 🔐 Protected admin-only functionality
+---
+
+## 🧰 Tech Stack
+
+| Domain | Technologies |
+|---|---|
+| **Frontend Framework** | React 19, React Router v7, Redux Toolkit |
+| **Styling & Icons** | Tailwind CSS, DaisyUI, Lucide Icons |
+| **Code Editor** | Custom Multi-Language IDE with Monaco / Syntax Highlighting |
+| **Backend Runtime** | Node.js, Express.js |
+| **Authentication & Security** | JWT, Cookie-Parser, Bcrypt, Role-Based Access Control (RBAC) |
+| **Database & Caching** | MongoDB Atlas (Mongoose `.lean()` queries), Cloud Redis (Non-blocking token blocklist) |
+| **Code Execution Engine** | Self-Hosted Judge0 Sandbox API |
+| **AI Engine** | Google Gemini API (`@google/genai`) |
+| **Media Delivery** | Cloudinary API & YouTube Embed iFrame Player |
 
 ---
 
@@ -70,124 +71,68 @@ It also provides an **admin dashboard** for managing problems, users, test cases
 ```text
 CodeForge/
 │
-├── client/                      # React frontend
-│   ├── public/
-│   └── src/
-│       ├── components/          # Reusable UI components
-│       ├── pages/               # Application pages
-│       ├── hooks/               # Custom React hooks
-│       ├── services/            # API communication
-│       └── ...
+├── frontend/                   # React 19 Single Page Application
+│   ├── src/
+│   │   ├── components/         # Navbar, Editorial, AdminPanel, AdminUpdate, AdminDelete, AdminVideo, AdminUpload, ChatAi, SubmissionHistory
+│   │   ├── pages/              # Homepage, ProblemPage, Profile, Login, Signup, Admin
+│   │   ├── utils/              # axiosClient (In-memory GET cache & interceptors)
+│   │   ├── store/              # Redux Store configuration
+│   │   ├── authSlice.js        # Authentication & User session Redux Slice
+│   │   └── App.jsx             # React Router routing & Protected Admin guards
+│   └── package.json
 │
-├── server/                      # Node.js + Express backend
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   ├── middleware/
-│   ├── services/
-│   └── ...
+├── backend/                    # Node.js + Express REST API Server
+│   ├── src/
+│   │   ├── config/             # MongoDB (`db.js`) & Redis (`redis.js`) connection setup
+│   │   ├── controllers/        # userAuthent, userProblem, userSubmission, solveDoubt, videoSection
+│   │   ├── middleware/         # userMiddleware, adminMiddleware
+│   │   ├── models/             # Mongoose Schemas (user, problem, submission, solutionVideo)
+│   │   ├── routes/             # userAuth, problemCreator, submit, aiChatting, videoCreator
+│   │   └── utils/              # problemUtility (Judge0 batch submissions & language mappings)
+│   └── package.json
 │
-├── judge0/                      # Self-hosted Judge0 configuration
-│
-├── .gitignore
 └── README.md
 ```
 
 ---
 
-## 🧰 Tech Stack
-
-| Layer | Technologies |
-|---|---|
-| Frontend | React.js, JavaScript/TypeScript, Tailwind CSS |
-| Code Editor | Monaco Editor |
-| Backend | Node.js, Express.js |
-| Database | MongoDB, Mongoose |
-| Authentication | JWT, Bcrypt |
-| AI Integration | Google Gemini API |
-| Code Execution | Judge0, Docker |
-| API Communication | REST API, Axios |
-| Development | VS Code, Git, GitHub, Postman |
-
----
-
-## 🔄 How It Works
-
-### 💻 Code Submission Flow
+## 🔄 Code Execution & Evaluation Pipeline
 
 ```text
-User
-  │
-  ▼
-React Frontend
-  │
-  ▼
-Node.js + Express API
-  │
-  ├──────────────► MongoDB
-  │
-  ▼
-Submission Service
-  │
-  ▼
-Self-hosted Judge0
-  │
-  ▼
-Sandboxed Code Execution
-  │
-  ▼
-Test Results / Verdict
-  │
-  ▼
-Submission History
-```
-
-### 🤖 AI Assistance Flow
-
-```text
-Problem Context
-      │
-      ▼
-Node.js + Express API
-      │
-      ▼
-Google Gemini AI
-      │
-      ▼
-Context-Aware DSA Assistance
+User Submits Code (C, C++, Java, JS, Python 3)
+                      │
+                      ▼
+            React 19 Frontend
+                      │
+                      ▼
+         Node.js + Express REST API
+                      │
+      ┌───────────────┴───────────────┐
+      ▼                               ▼
+MongoDB Atlas                  Judge0 Sandbox
+(Store Submission Record)      (Execute Against 11 Hidden Cases)
+      │                               │
+      └───────────────┬───────────────┘
+                      ▼
+          Normalize Verdict Output
+     (Accepted / Wrong Answer / TLE / Error)
+                      │
+                      ▼
+      Update Solved List & User Analytics
 ```
 
 ---
 
-## 🔐 Authentication & Authorization
+## ⚡ Performance & Optimization Highlights
 
-CodeForge uses **JWT-based authentication** with role-based access control.
-
-### 👤 Users
-
-Users can:
-
-- Solve problems
-- Submit code
-- View results
-- Track submission history
-- Get AI-powered DSA assistance
-
-### 🛡️ Admins
-
-Admins can:
-
-- Manage problems
-- Manage test cases
-- Manage users
-- Post notices
-- Monitor platform activity
-
-Protected routes ensure that admin functionality is accessible only to authorized administrators.
+1. **0ms In-Memory Client Caching**: `axiosClient` caches static public GET requests for 15s while automatically bypassing user-specific endpoints (`/user/check`, `/problem/problemSolvedByUser`, `/userStats`) to prevent account cross-pollution.
+2. **Mongoose `.lean()` Query Speed**: Backend endpoints use Mongoose `.lean()` to bypass heavy document hydration, reducing DB response time from 2.5s down to **5–15 milliseconds**.
+3. **Non-Blocking Background Redis**: Redis token blocklist lookups run with a 0.8s max fallback timeout to an in-memory `Set`, ensuring the Node event loop never freezes on network delays.
+4. **Persistent MongoDB Connection Pooling**: `minPoolSize: 5` maintains warm TCP sockets to MongoDB Atlas for instant query execution.
 
 ---
 
-## 🚀 Installation & Setup
+## 💻 Installation & Local Setup
 
 ### 1. Clone the Repository
 
@@ -196,99 +141,54 @@ git clone https://github.com/Tiwari-priya16/CodeForge-Online-Coding-Platform.git
 cd CodeForge-Online-Coding-Platform
 ```
 
-### 2. Install Frontend Dependencies
+### 2. Configure Backend Environment Variables
 
-```bash
-cd client
-npm install
-```
-
-### 3. Install Backend Dependencies
-
-```bash
-cd ../server
-npm install
-```
-
-### 4. Configure Environment Variables
-
-Create a `.env` file inside the `server` directory.
+Create a `.env` file in the `backend/` directory:
 
 ```env
-PORT=5000
-MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-GEMINI_KEY=your_gemini_api_key
+PORT=3000
+DB_CONNECT_STRING=your_mongodb_atlas_connection_string
+JWT_KEY=your_jwt_secret_key
+REDIS_PASS=your_redis_password
+JUDGE0_URL=http://your_judge0_ip:2358
+GEMINI_KEY=your_google_gemini_api_key
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 ```
 
-> ⚠️ Never commit `.env` files or other sensitive credentials to GitHub.
-
-### 5. Start the Backend
+### 3. Install & Start Backend
 
 ```bash
-cd server
+cd backend
+npm install
+npm start
+```
+
+*The backend server will run on `http://localhost:3000`.*
+
+### 4. Install & Start Frontend
+
+Open a new terminal window:
+
+```bash
+cd frontend
+npm install
 npm run dev
 ```
 
-### 6. Start the Frontend
-
-Open another terminal:
-
-```bash
-cd client
-npm run dev
-```
-
-### 7. Start Judge0
-
-If using the self-hosted Judge0 setup:
-
-```bash
-cd judge0
-docker-compose up -d
-```
-
----
-
-## 📌 Project Status
-
-🚧 **Active Development**
-
-CodeForge is continuously being improved with new features, UI enhancements, backend functionality, AI capabilities, and improvements to the code evaluation system.
-
----
-
-## 🚀 Future Enhancements
-
-- 🏆 Global leaderboard
-- 🔥 Daily coding streaks
-- 📊 Advanced user analytics
-- 🏅 Badges and achievements
-- 💬 Problem discussion system
-- ⭐ Bookmark/favorite problems
-- ⏱️ Coding contests
-- 🌐 Expanded language support
-- 📡 Real-time judge updates using WebSockets
+*The frontend application will run on `http://localhost:5173`.*
 
 ---
 
 ## 👩‍💻 Developer
 
 **Priya Tiwari**  
-B.Tech CSE — NIT Patna
-
+B.Tech CSE — NIT Patna  
 GitHub: **[Tiwari-priya16](https://github.com/Tiwari-priya16)**
 
 ---
 
-## ⭐ About the Project
+## ⭐ Project Purpose
 
-CodeForge is being developed as a portfolio project to gain practical experience in **full-stack development, backend architecture, authentication, database design, role-based authorization, AI integration, and secure code execution systems**.
-
-The project aims to evolve into a production-style online coding platform rather than remaining a simple CRUD application.
-
----
-
-## 📜 License
-
-This project is developed for educational and portfolio purposes.
+Developed as a full-stack portfolio project to demonstrate expertise in **scalable REST API design, role-based access control (RBAC), multi-language code execution pipelines, AI API integration, database indexing, and modern React 19 UI design**.

@@ -185,6 +185,7 @@ const calculateStreak = async (userId) => {
   }
 };
 
+// Real User Submissions Accuracy Logic: (Accepted Submissions / Total Submissions) * 100
 const getUserStats = async (req, res) => {
   try {
     const userId = req.result._id;
@@ -192,7 +193,7 @@ const getUserStats = async (req, res) => {
     const acceptedSubmissions = await Submission.countDocuments({ userId, status: 'accepted' });
     const accuracy = totalSubmissions > 0
       ? Math.round((acceptedSubmissions / totalSubmissions) * 100)
-      : 100;
+      : 0;
 
     const streakData = await calculateStreak(userId);
 
@@ -204,7 +205,7 @@ const getUserStats = async (req, res) => {
       solvedToday: streakData.solvedToday
     });
   } catch (err) {
-    res.status(500).json({ totalSubmissions: 0, acceptedSubmissions: 0, accuracy: 100, streak: 0, solvedToday: false });
+    res.status(500).json({ totalSubmissions: 0, acceptedSubmissions: 0, accuracy: 0, streak: 0, solvedToday: false });
   }
 };
 
