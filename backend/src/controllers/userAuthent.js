@@ -5,11 +5,13 @@ const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_KEY || 'CodeForge_JWT_Secret_Key_2026';
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
 
 const COOKIE_OPTIONS = {
     maxAge: 60 * 60 * 1000,
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: isProduction ? 'none' : 'lax',
+    secure: isProduction,
     path: '/'
 };
 
@@ -96,7 +98,7 @@ const logout = async (req, res) => {
             }
         }
 
-        res.cookie("token", null, { expires: new Date(0), path: '/' });
+        res.cookie("token", null, { ...COOKIE_OPTIONS, expires: new Date(0) });
         res.status(200).json({ message: "Logged Out Successfully" });
     } catch (err) {
         res.status(200).json({ message: "Logged Out" });

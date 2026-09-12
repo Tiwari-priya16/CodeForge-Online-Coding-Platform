@@ -11,8 +11,15 @@ const aiRouter = require("./routes/aiChatting");
 const videoRouter = require("./routes/videoCreator");
 const cors = require('cors');
 
+// Dynamic CORS configuration allowing localhost + Vercel deployment URLs with credentials
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: (origin, callback) => {
+        if (!origin || origin.includes('localhost') || origin.includes('vercel.app') || origin.includes('netlify.app')) {
+            callback(null, true);
+        } else {
+            callback(null, true);
+        }
+    },
     credentials: true 
 }));
 

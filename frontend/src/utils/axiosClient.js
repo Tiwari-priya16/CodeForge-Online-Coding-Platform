@@ -1,7 +1,10 @@
 import axios from "axios";
 
+const isDev = import.meta.env.MODE === 'development';
+const API_URL = import.meta.env.VITE_API_URL || (isDev ? 'http://localhost:3000' : 'https://codeforge-backend-94uy.onrender.com');
+
 const axiosClient = axios.create({
-    baseURL: 'http://localhost:3000',
+    baseURL: API_URL,
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json'
